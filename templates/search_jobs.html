@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=100%, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ get_text('Search Jobs') }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/like.js') }}" defer></script>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 15px;
+            box-sizing: border-box;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; 
+        }
+
+        .filter-container {
+            flex-shrink: 0;
+            margin-bottom: 15px;
+        }
+
+        .jobs-wrapper {
+            display: flex;
+            flex-direction: column; 
+            gap: 15px;
+            padding: 20px 0;
+        }
+
+        .job-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .job-card-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .job-card-actions a {
+            flex: 1;
+            padding: 8px 12px;
+            background-color: #bf591c;  
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .job-card-actions a:hover {
+            background-color: #a64d18; 
+        }
+
+        .ui-bookmark {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .ui-bookmark input {
+            display: none;
+        }
+
+        .ui-bookmark .bookmark {
+            font-size: 20px;
+            color: #bf591c;
+            transition: color 0.3s;
+        }
+
+        .ui-bookmark input:checked + .bookmark {
+            color: red;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 100%;
+                margin: 0;
+                padding: 10px;
+                height: 100vh;
+            }
+
+            .filter-container {
+                padding: 10px;
+            }
+
+            form {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            form input, 
+            form select, 
+            form button,
+            .reset-button {
+                width: 100%;
+                margin: 5px 0;
+                box-sizing: border-box;
+            }
+
+            .filter-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 15px;
+            }
+
+            #filterForm button,
+            #filterForm .reset-button {
+                margin: 5px 0;
+            }
+
+            .language-selector {
+                position: static;
+                margin: 10px auto;
+            }
+
+            .job-card p {
+                font-size: 14px;
+                margin: 8px 0;
+            }
+
+            .job-card a {
+                display: block;
+                margin: 10px 0;
+                text-align: center;
+            }
+
+            .job-card-actions {
+                flex-direction: column;
+            }
+
+            .job-card-actions a {
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="language-selector">
+        <a href="{{ url_for('change_language', lang='en') }}" {% if session.get('language') == 'en' %}class="active"{% endif %}>English</a> |
+        <a href="{{ url_for('change_language', lang='hi') }}" {% if session.get('language') == 'hi' %}class="active"{% endif %}>हिंदी</a> |
+        <a href="{{ url_for('change_language', lang='te') }}" {% if session.get('language') == 'te' %}class="active"{% endif %}>తెలుగు</a>
+    </div>
+
+    <div class="container">
+        <a href="{{ url_for('dashboard') }}" class="reset-button" style="float: right; margin-bottom: 10px;">← {{ get_text('back_to_dashboard') }}</a>
+        
+        <div class="filter-container">
+            <h2>{{ get_text('search_jobs') }}</h2>
+            <form method="POST" id="filterForm">
+                <label for="filter_by">{{ get_text('filter_by') }}</label>
+                <select name="filter_by" id="filter_by" onchange="toggleFilterInputs()">
+                    <option value="" {% if filter_by == '' %}selected{% endif %}>{{ get_text('select_filter') }}</option>
+                    <option value="salary" {% if filter_by == 'salary' %}selected{% endif %}>{{ get_text('salary') }}</option>
+                    <option value="job_title" {% if filter_by == 'job_title' %}selected{% endif %}>{{ get_text('job_title') }}</option>
+                    <option value="location" {% if filter_by == 'location' %}selected{% endif %}>{{ get_text('job_location') }}</option>
+                    <option value="date_posted" {% if filter_by == 'date_posted' %}selected{% endif %}>{{ get_text('date_posted') }}</option>
+                    <option value="job_type" {% if filter_by == 'job_type' %}selected{% endif %}>{{ get_text('job_type') }}</option>
+                </select>
+
+                <div id="salaryFilter" style="display: {% if filter_by == 'salary' %}block{% else %}none{% endif %};">
+                    <label for="salary_min">{{ get_text('min_salary') }}</label>
+                    <input type="number" name="salary_min" id="salary_min" placeholder="{{ get_text('enter minimum salary') }}" value="{{ salary_min }}">
+                    <label for="salary_max">{{ get_text('max_salary') }}</label>
+                    <input type="number" name="salary_max" id="salary_max" placeholder="{{ get_text('enter maximum salary') }}" value="{{ salary_max }}">
+                    <label for="sort_salary">{{ get_text('sort_by') }}</label>
+                    <select name="sort_salary" id="sort_salary">
+                        <option value="" {% if sort_salary == '' %}selected{% endif %}>{{ get_text('select_sort') }}</option>
+                        <option value="high_to_low" {% if sort_salary == 'high_to_low' %}selected{% endif %}>{{ get_text('high to low salary') }}</option>
+                        <option value="low_to_high" {% if sort_salary == 'low_to_high' %}selected{% endif %}>{{ get_text('low to high salary') }}</option>
+                    </select>
+                </div>
+
+                <div id="jobTitleFilter" style="display: {% if filter_by == 'job_title' %}block{% else %}none{% endif %};">
+                    <label for="job_title">{{ get_text('job_title') }}</label>
+                    <select name="job_title" id="job_title">
+                        <option value="">{{ get_text('select_job') }}</option>
+                        {% for title in job_titles %}
+                        <option value="{{ title }}" {% if job_title == title %}selected{% endif %}>{{ get_text(title) }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="locationFilter" style="display: {% if filter_by == 'location' %}block{% else %}none{% endif %};">
+                    <label for="location">{{ get_text('job location') }}</label>
+                    <input type="text" name="location" id="location" placeholder="{{ get_text('enter_location') }}" value="{{ location }}">
+                </div>
+
+                <div id="datePostedFilter" style="display: {% if filter_by == 'date_posted' %}block{% else %}none{% endif %};">
+                    <label for="date_posted">{{ get_text('date posted') }}</label>
+                    <select name="date_posted" id="date_posted">
+                        <option value="">{{ get_text('select date') }}</option>
+                        <option value="1" {% if date_posted == '1' %}selected{% endif %}>{{ get_text('last_1_day') }}</option>
+                        <option value="7" {% if date_posted == '7' %}selected{% endif %}>{{ get_text('last_7_days') }}</option>
+                        <option value="30" {% if date_posted == '30' %}selected{% endif %}>{{ get_text('last_30_days') }}</option>
+                    </select>
+                </div>
+
+                <div id="jobTypeFilter" style="display: {% if filter_by == 'job_type' %}block{% else %}none{% endif %};">
+                    <label for="job_type">{{ get_text('job_type') }}</label>
+                    <select name="job_type" id="job_type">
+                        <option value="">{{ get_text('select_job_type') }}</option>
+                        <option value="full_time" {% if job_type == 'full_time' %}selected{% endif %}>{{ get_text('full_time') }}</option>
+                        <option value="part_time" {% if job_type == 'part_time' %}selected{% endif %}>{{ get_text('part_time') }}</option>
+                        <option value="contract" {% if job_type == 'contract' %}selected{% endif %}>{{ get_text('contract') }}</option>
+                    </select>
+                </div>
+
+                <div class="filter-buttons">
+                    <button type="submit">{{ get_text('apply_filters') }}</button>
+                    <a href="{{ url_for('search_jobs') }}" class="reset-button">{{ get_text('reset search') }}</a>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            function toggleFilterInputs() {
+                const filterBy = document.getElementById('filter_by').value;
+                document.getElementById('salaryFilter').style.display = filterBy === 'salary' ? 'block' : 'none';
+                document.getElementById('jobTitleFilter').style.display = filterBy === 'job_title' ? 'block' : 'none';
+                document.getElementById('locationFilter').style.display = filterBy === 'location' ? 'block' : 'none';
+                document.getElementById('datePostedFilter').style.display = filterBy === 'date_posted' ? 'block' : 'none';
+                document.getElementById('jobTypeFilter').style.display = filterBy === 'job_type' ? 'block' : 'none';
+            }
+        </script>
+
+        <hr>
+
+        {% if jobs %}
+            <div class="jobs-wrapper">
+                {% for job in jobs %}
+                    <div class="job-card">
+                        <div class="job-card-content">
+                            <h3>{{ job.title }}</h3>
+                            <p><strong>{{ get_text('job_description') }}:</strong> {{ job.description }}</p>
+                            <p><strong>{{ get_text('job_location') }}:</strong> {{ job.location }}</p>
+                            <p><strong>{{ get_text('phone_number') }}:</strong> {{ job.phone_number }}</p>
+                            <p><strong>{{ get_text('salary') }}:</strong> {{ job.salary or get_text('not_specified') }}</p>
+                            <p><strong>{{ get_text('job_type') }}:</strong> {{ get_text(job.job_type) }}</p>
+                            <p><strong>{{ get_text('posted by') }}:</strong> 
+                                <img src="{{ url_for('static', filename='avatars/' + job.profile_picture) }}" alt="Profile Picture" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle;">
+                                {{ job.full_name }}
+                            </p>
+                            <p><strong>{{ get_text('posted_on') }}:</strong> {{ job.created_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
+                        </div>
+                        <div class="job-card-actions">
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ job.location }}, {{ job.village_name }}, {{ job.mandal_name }}, {{ job.district }}, {{ job.pincode }}" target="_blank">{{ get_text('view_on_map') }}</a>
+                            <a href="https://wa.me/+91{{ job.phone_number }}?text={{ get_text('hello_interested_in_job') }} {{ job.title }}" target="_blank">{{ get_text('contact_on_whatsapp') }}</a>
+                            <a href="sms:+91{{ job.phone_number }}?body={{ get_text('hello_interested_in_job') }} {{ job.title }}">{{ get_text('contact_via_sms') }}</a>
+                            <label class="ui-bookmark">
+                                <input type="checkbox" data-job-id="{{ job.id }}" {% if job.id in saved_jobs %}checked{% endif %}>
+                                <div class="bookmark">
+                                    <svg
+                                        viewBox="0 0 16 16"
+                                        style="margin-top:4px"
+                                        class="bi bi-heart-fill"
+                                        height="25"
+                                        width="25"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
+                                            fill-rule="evenodd"
+                                        ></path>
+                                    </svg>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>{{ get_text('no_jobs_found') }}</p>
+        {% endif %}
+    </div>
+
+    <script>
+        document.querySelectorAll('.ui-bookmark input').forEach(input => {
+            const jobId = input.getAttribute('data-job-id');
+
+            // Initialize the checkbox state based on the server data
+            fetch(`/get_job_status/${jobId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        input.checked = data.saved;
+                    } else {
+                        console.error(data.message || 'An error occurred while fetching job status');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                });
+
+            input.addEventListener('change', function (e) {
+                fetch(`/save_job/${jobId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.checked = data.saved;
+                    } else {
+                        alert(data.message || 'An error occurred');
+                        this.checked = !this.checked; // Revert the checkbox state
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    this.checked = !this.checked; // Revert the checkbox state
+                });
+            });
+        });
+    </script>
+</body>
+</html>

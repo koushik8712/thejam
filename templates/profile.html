@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('profile') }}{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-box">
+        <h2 style="color: rgb(191, 89, 30); margin-bottom: 20px;">
+            🌾 {{ get_text('welcome_user', user['full_name'] if user else 'Guest') }} 🌾
+        </h2>
+
+        <div class="profile-details">
+            <p><strong>{{ get_text('username') }}:</strong> {{ user['username'] }}</p>
+            <p><strong>{{ get_text('phone_number') }}:</strong> {{ user['phone_number'] }}</p>
+            <p><strong>{{ get_text('gender') }}:</strong> {{ user['gender'] if user['gender'] else get_text('not_specified') }}</p>
+            <p><strong>{{ get_text('bio') }}:</strong> {{ user['bio'] if user['bio'] else get_text('no_bio') }}</p>
+            <p><strong>{{ get_text('location') }}:</strong> {{ user['location'] if user['location'] else get_text('no_location') }}</p>
+        </div>
+
+        <div class="profile-image">
+            {% if user['profile_picture'] %}
+                {% if user['profile_picture'] in avatars %}
+                    <img src="{{ url_for('static', filename='avatars/' + user['profile_picture']) }}" alt="Avatar">
+                {% else %}
+                    <img src="{{ url_for('static', filename='uploads/' + user['profile_picture']) }}" alt="Uploaded Picture">
+                {% endif %}
+            {% else %}
+                <img src="{{ url_for('static', filename='default_profile.png') }}" alt="Default">
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="back-link">
+            <button class="action-btn">{{ get_text('back_to_dashboard') }}</button>
+        </a>
+
+        <a href="{{ url_for('logout') }}" class="logout-link">
+            <button class="action-btn">{{ get_text('logout') }}</button>
+        </a>
+    </div>
+</div>
+{% endblock %}

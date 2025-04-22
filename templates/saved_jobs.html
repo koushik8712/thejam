@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('liked jobs') }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ get_text('liked jobs') }}</h1>
+    {% if saved_jobs %}
+        <div class="jobs-wrapper">
+            {% for job in saved_jobs %}
+                <div class="job-card">
+                    <div class="job-card-content">
+                        <h3>{{ job.title }}</h3>
+                        <p><strong>{{ get_text('job description') }}:</strong> {{ job.description }}</p>
+                        <p><strong>{{ get_text('job location') }}:</strong> {{ job.location }}</p>
+                        <p><strong>{{ get_text('salary') }}:</strong> {{ job.salary or get_text('not specified') }}</p>
+                        <p><strong>{{ get_text('saved on') }}:</strong> {{ job.saved_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
+                    </div>
+                    <div class="job-card-actions">
+                        <button class="remove-job-btn" data-job-id="{{ job.id }}" style="background: none; border: none; cursor: pointer;">
+                            <span class="remove-icon" style="color: red;">❌</span>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>{{ get_text('no liked jobs') }}</p>
+    {% endif %}
+</div>
+
+<script>
+    document.querySelectorAll('.remove-job-btn').forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const jobId = this.getAttribute('data-job-id');
+            const jobCard = this.closest('.job-card');
+
+            fetch(`/save_job/${jobId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && !data.saved) {
+                    jobCard.remove();
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            })
+            .catch(err => console.error('Error:', err));
+        });
+    });
+</script>
+{% endblock %}

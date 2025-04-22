@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('edit_profile') }}{% endblock %}
+
+{% block content %}
+    <div class="register-container">
+        <h1>{{ get_text('edit_profile') }}</h1>
+        <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data">
+            <label>{{ get_text('full_name') }}:</label>
+            <input type="text" name="full_name" value="{{ user['full_name'] }}" required>
+
+            <label>{{ get_text('phone_number') }}:</label>
+            <input type="text" name="phone_number" value="{{ user['phone_number'] }}" required>
+
+            <label>{{ get_text('gender') }}:</label>
+            <div class="radio-input">
+                <label>
+                    <input type="radio" id="female" name="gender" value="Female" class="i_female" 
+                           {% if user['gender'] == 'Female' %}checked{% endif %} required>
+                    <div class="card female">
+                        <div class="logo">♀</div>
+                        <div class="title">{{ get_text('female') }}</div>
+                    </div>
+                </label>
+                <label>
+                    <input type="radio" id="male" name="gender" value="Male" class="i_male" 
+                           {% if user['gender'] == 'Male' %}checked{% endif %} required>
+                    <div class="card male">
+                        <div class="logo">♂</div>
+                        <div class="title">{{ get_text('male') }}</div>
+                    </div>
+                </label>
+                <label>
+                    <input type="radio" id="no-gender" name="gender" value="Other" class="i_no-gender" 
+                           {% if user['gender'] == 'Other' %}checked{% endif %} required>
+                    <div class="card no-gender">
+                        <div class="logo">⚧</div>
+                        <div class="title">{{ get_text('other') }}</div>
+                    </div>
+                </label>
+            </div>
+
+            <label>{{ get_text('bio') }}:</label>
+            <textarea name="bio">{{ user['bio'] }}</textarea>
+
+            <label>{{ get_text('location') }}:</label>
+            <input type="text" name="location" value="{{ user['location'] }}">
+
+            <label>{{ get_text('choose_new_avatar') }}:</label>
+            <div class="avatar-container">
+                {% for avatar in avatars %}
+                <div class="avatar-option" onclick="selectAvatar('{{ avatar }}', this)">
+                    <img src="{{ url_for('static', filename='avatars/' + avatar) }}" alt="{{ avatar }}">
+                </div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="avatar_choice" id="avatar_choice">
+
+            <label>{{ get_text('upload_new_picture') }}:</label>
+            <input type="file" name="avatar_file" id="avatar_file" accept="image/*" onchange="previewImage(event)">
+            <img id="custom-preview" class="preview-image" alt="{{ get_text('uploaded_preview') }}">
+
+            <button type="submit">{{ get_text('save_changes') }}</button>
+        </form>
+        <a href="{{ url_for('profile') }}">{{ get_text('back_to_profile') }}</a>
+    </div>
+
+    <script>
+        function selectAvatar(avatar, element) {
+            document.getElementById("avatar_choice").value = avatar;
+            document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('custom-preview').style.display = 'none';
+        }
+
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                var output = document.getElementById('custom-preview');
+                output.src = reader.result;
+                output.style.display = 'block';
+                document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+                document.getElementById("avatar_choice").value = "";
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+{% endblock %}

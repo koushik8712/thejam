@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('post_job') }}{% endblock %}
+
+{% block content %}
+<div class="post-job-container">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for message in messages %}
+        <p class="success">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <h2>📢 {{ get_text('welcome') }}</h2>
+    <form action="{{ url_for('post_job') }}" method="POST">
+        <label for="title">{{ get_text('job_title') }}</label>
+        <select name="title" id="title" required>
+            <option value="" disabled selected>{{ get_text('select_job') }}</option>
+            {% for title in job_titles %}
+            <option value="{{ title }}">{{ get_text(title) }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="description">{{ get_text('job_description') }}</label>
+        <textarea name="description" id="description" rows="4" placeholder="{{ get_text('job_description') }}"></textarea>
+
+        <label for="location">{{ get_text('job_location') }}</label>
+        <input type="text" name="location" id="location" required placeholder="{{ get_text('village_town') }}">
+
+        <label for="village_name">{{ get_text('village_name') }}</label>
+        <input type="text" name="village_name" id="village_name" placeholder="{{ get_text('village_name') }}">
+
+        <label for="mandal_name">{{ get_text('mandal_name') }}</label>
+        <input type="text" name="mandal_name" id="mandal_name" placeholder="{{ get_text('mandal_name') }}">
+
+        <label for="district">{{ get_text('district') }}</label>
+        <input type="text" name="district" id="district" placeholder="{{ get_text('district') }}">
+
+        <label for="pincode">{{ get_text('pincode') }}</label>
+        <input type="text" name="pincode" id="pincode" placeholder="{{ get_text('pincode') }}">
+
+        <label for="salary">{{ get_text('salary') }}</label>
+        <input type="text" name="salary" id="salary" required placeholder="{{ get_text('salary_placeholder') }}">
+
+        <label for="phone_number">{{ get_text('contact_info') }}</label>
+        <input type="text" name="phone_number" id="phone_number" required placeholder="{{ get_text('phone_placeholder') }}">
+
+        <label for="job_type">{{ get_text('job_type') }}</label>
+        <select name="job_type" id="job_type" required>
+            <option value="" disabled selected>{{ get_text('select_job_type') }}</option>
+            <option value="full_time">{{ get_text('full_time') }}</option>
+           <option value="part_time">{{ get_text('part_time') }}</option>
+ <option value="contract">{{ get_text('contract') }}</option>
+        </select>
+
+ <button type="submit">{{ get_text('submit') }}</button>
+    </form>
+
+    <script>
+        const locationInput = document.getElementById('location');
+  locationInput.addEventListener('input', () => {
+     const location = locationInput.value.trim();
+      if (location) {
+     console.log(`Location entered: ${location}`);
+ }
+});
+    </script>
+    <br>
+    <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a>
+</div>
+{% endblock %}

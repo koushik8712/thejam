@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ get_text('') }}{% endblock %}
+
+{% block content %}
+<div class="container" style="width: 900px; padding: 40px;">
+    <h1>{{ get_text('animal auction') }}</h1>
+
+    <form action="{{ url_for('upload_animal') }}" method="POST" enctype="multipart/form-data">
+        <label for="animal_category">{{ get_text('select animal') }}</label>
+        <select id="animal_category" name="animal_category" onchange="toggleCustomAnimalInput(this)" required>
+            <option value="">{{ get_text('choose category') }}</option>
+            <option value="cows">{{ get_text('cows') }}</option>
+            <option value="buffaloes">{{ get_text('buffaloes') }}</option>
+            <option value="goats">{{ get_text('goats') }}</option>
+            <option value="sheep">{{ get_text('sheep') }}</option>
+            <option value="poultry">{{ get_text('poultry') }}</option>
+            <option value="horses">{{ get_text('horses') }}</option>
+            <option value="custom">{{ get_text('type manually') }}</option>
+        </select>
+
+        <input type="text" id="custom_animal_input" name="custom_animal" placeholder="{{ get_text('type animal name') }}" style="display: none; margin-top: 10px;">
+
+        <label for="animal_cost">{{ get_text('animal cost') }}</label>
+        <input type="number" id="animal_cost" name="animal_cost" placeholder="{{ get_text('enter animal cost') }}" required>
+
+        <label for="animal_photo">{{ get_text('upload photo') }}</label>
+        <input type="file" id="animal_photo" name="animal_photo" accept="image/*" required>
+
+        <button type="submit">{{ get_text('submit') }}</button>
+    </form>
+</div>
+
+<script>
+    function toggleCustomAnimalInput(selectElement) {
+        const customInput = document.getElementById('custom_animal_input');
+        if (selectElement.value === 'custom') {
+            customInput.style.display = 'block';
+            customInput.required = true;
+        } else {
+            customInput.style.display = 'none';
+            customInput.required = false;
+        }
+    }
+</script>
+{% endblock %}

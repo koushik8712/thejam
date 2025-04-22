@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('register') }}{% endblock %}
+
+{% block content %}
+    <div class="register-container">
+        <h1>{{ get_text('welcome') }}</h1>
+        <form action="{{ url_for('register') }}" method="POST" enctype="multipart/form-data">
+            <label for="full_name">{{ get_text('full_name') }} </label>
+            <input type="text" id="full_name" name="full_name" required 
+                   value="{{ form_data.full_name or '' }}"
+                  >
+
+            <label for="phone_number">{{ get_text('phone_number') }} </label>
+            <input type="text" 
+                   id="phone_number" 
+                   name="phone_number" 
+                   required 
+                   value="{{ form_data.phone_number or '' }}"
+                   pattern="[0-9]{10}" 
+                   maxlength="10"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
+                   placeholder="{{ get_text('phone_placeholder') }}">
+
+            <label for="username">{{ get_text('username') }} </label>
+            <input type="text" id="username" name="username" required 
+                   value="{{ form_data.username or '' }}"
+                 >
+
+            <label for="password">{{ get_text('password') }} </label>
+            <input type="password" id="password" name="password" required placeholder="{{ get_text('') }}">
+
+            <label for="confirm_password">{{ get_text('confirm_password') }} </label>
+            <input type="password" id="confirm_password" name="confirm_password" required placeholder="{{ get_text('') }}">
+
+            
+            <label for="gender">{{ get_text('gender') }}:</label>
+            <div class="radio-input">
+                <label>
+                    <input type="radio" id="female" name="gender" value="Female" class="i_female" required>
+                    <div class="card female">
+                        <div class="logo">♀</div>
+                        <div class="title">{{ get_text('female') }}</div>
+                    </div>
+                </label>
+                <label>
+                    <input type="radio" id="male" name="gender" value="Male" class="i_male" required>
+                    <div class="card male">
+                        <div class="logo">♂</div>
+                        <div class="title">{{ get_text('male') }}</div>
+                    </div>
+                </label>
+                <label>
+                    <input type="radio" id="no-gender" name="gender" value="Other" class="i_no-gender" required>
+                    <div class="card no-gender">
+                        <div class="logo">⚧</div>
+                        <div class="title">{{ get_text('other') }}</div>
+                    </div>
+                </label>
+            </div>
+
+            <label for="bio">{{ get_text('bio') }}</label>
+            <textarea id="bio" name="bio" rows="4" style="resize: vertical;" placeholder="{{ get_text('') }}"></textarea>
+
+            <label for="location">{{ get_text('location') }}</label>
+            <input type="text" id="location" name="location" placeholder="{{ get_text('') }}">
+
+            <!-- Removed the "Select Job" field -->
+
+            <label>{{ get_text('choose_avatar') }}</label>
+            <div class="avatar-container">
+                {% for avatar in avatars %}
+                <div class="avatar-option" onclick="selectAvatar('{{ avatar }}', this)">
+                    <img src="{{ url_for('static', filename='avatars/' + avatar) }}" alt="{{ avatar }}">
+                </div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="avatar_choice" id="avatar_choice">
+
+            <label>{{ get_text('upload_avatar') }}</label>
+            <input type="file" name="avatar_file" id="avatar_file" accept="image/*" onchange="previewImage(event)">
+            <img id="custom-preview" class="preview-image" alt="{{ get_text('uploaded_preview') }}">
+
+            <button type="submit">{{ get_text('submit') }}</button>
+            <p class="register-link">{{ get_text('have_account') }} <a href="{{ url_for('home') }}">{{ get_text('login') }}</a></p>
+        </form>
+    </div>
+
+    <script>
+        function selectAvatar(avatar, element) {
+            document.getElementById("avatar_choice").value = avatar;
+            document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('custom-preview').style.display = 'none';
+        }
+
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('custom-preview');
+                output.src = reader.result;
+                output.style.display = 'block';
+                document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+                document.getElementById("avatar_choice").value = "";
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+{% endblock %}

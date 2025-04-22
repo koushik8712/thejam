@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="{{ session.get('language', 'en') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="language-selector">
+        <a href="{{ url_for('change_language', lang='en') }}" {% if session.get('language') == 'en' %}class="active"{% endif %}>English</a> |
+        <a href="{{ url_for('change_language', lang='hi') }}" {% if session.get('language') == 'hi' %}class="active"{% endif %}>हिंदी</a> |
+        <a href="{{ url_for('change_language', lang='te') }}" {% if session.get('language') == 'te' %}class="active"{% endif %}>తెలుగు</a>
+    </div>
+
+    <div class="background-overlay"></div>
+    
+    {% block content %}{% endblock %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

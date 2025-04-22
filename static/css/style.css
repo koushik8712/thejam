@@ -1,0 +1,842 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Alata&display=swap');
+
+body {
+    font-family: 'Alata', sans-serif;
+    background-image: url('/static/css/images/village.jpeg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow: auto;
+    position: relative;
+}
+.profile-box .profile-image:first-child {
+    display: none;
+}
+
+.background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 0;
+}
+
+.language-selector {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 8px 15px;
+    border-radius: 20px;
+    z-index: 1000;
+}
+
+.language-selector a {
+    color: white;
+    text-decoration: none;
+    margin: 0 5px;
+    font-size: 14px;
+}
+
+.language-selector a:hover {
+    text-decoration: underline;
+    color: #ffd700;
+}
+
+/* Login Container */
+.login-container {
+    background-color: rgba(253, 242, 203, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 400px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.login-container:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.login-container h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: rgb(191, 89, 30);
+}
+
+.login-form .input-group {
+    margin-bottom: 15px; 
+}
+
+.login-form button {
+    margin-top: 15px; /* Add space above the button */
+}
+
+.register-container {
+    background-color: rgba(253, 242, 203, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 500px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    max-height: 90vh;
+    overflow-y: auto;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Updated container styles to match other pages */
+.container {
+    background-color: rgba(253, 242, 203, 0.9); /* Match other containers */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 800px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.container:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design for Register Page */
+@media (max-width: 768px) {
+    .register-container {
+        width: 90%; /* Adjust width for smaller screens */
+        padding: 20px; /* Reduce padding */
+    }
+
+    .register-container h1 {
+        font-size: 22px; /* Adjust heading size */
+    }
+
+    input[type="text"], input[type="password"], textarea, select {
+        font-size: 0.9em; /* Adjust font size for inputs */
+    }
+
+    button {
+        font-size: 0.9em; /* Adjust button font size */
+    }
+}
+
+@media (max-width: 480px) {
+    .register-container {
+        width: 95%; /* Further adjust width for very small screens */
+        padding: 15px; /* Further reduce padding */
+    }
+
+    .register-container h1 {
+        font-size: 20px; /* Further adjust heading size */
+    }
+
+    .radio-input label .card {
+        width: 100px; /* Adjust gender card size */
+        height: 100px;
+    }
+
+    .radio-input label .card .logo {
+        font-size: 28px; /* Adjust logo size */
+    }
+
+    .radio-input label .card .title {
+        font-size: 12px; /* Adjust title size */
+    }
+}
+
+/* Responsive Design for Dashboard, Post Job, and Edit Profile Pages */
+@media (max-width: 768px) {
+    .dashboard-container,
+    .post-job-container,
+    .register-container {
+        width: 90%; /* Adjust width for smaller screens */
+        padding: 20px; /* Reduce padding */
+    }
+
+    .dashboard-container h1,
+    .post-job-container h2,
+    .register-container h1 {
+        font-size: 22px; /* Adjust heading size */
+    }
+
+    input[type="text"], input[type="password"], textarea, select, button {
+        font-size: 0.9em; /* Adjust font size for inputs and buttons */
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container,
+    .post-job-container,
+    .register-container {
+        width: 95%; /* Further adjust width for very small screens */
+        padding: 15px; /* Further reduce padding */
+    }
+
+    .dashboard-container h1,
+    .post-job-container h2,
+    .register-container h1 {
+        font-size: 20px; /* Further adjust heading size */
+    }
+
+    .radio-input label .card {
+        width: 100px; /* Adjust gender card size */
+        height: 100px;
+    }
+
+    .radio-input label .card .logo {
+        font-size: 28px; /* Adjust logo size */
+    }
+
+    .radio-input label .card .title {
+        font-size: 12px; /* Adjust title size */
+    }
+}
+
+/* Responsive Design for All Containers */
+@media (max-width: 768px) {
+    .dashboard-container,
+    .post-job-container,
+    .register-container,
+    .profile-container,
+    .login-container,
+    .container {
+        width: 95%; /* Use full width for better visibility */
+        padding: 20px; /* Increase padding for better spacing */
+        margin: 10px auto; /* Center the containers */
+    }
+
+    .dashboard-container h1,
+    .post-job-container h2,
+    .register-container h1,
+    .profile-container h2,
+    .login-container h1 {
+        font-size: 26px; /* Larger heading size for better readability */
+    }
+
+    input[type="text"],
+    input[type="password"],
+    textarea,
+    select,
+    button,
+    .job-card-actions a {
+        font-size: 1.1em; 
+    }
+
+    .job-card-actions {
+        flex-direction: column; 
+        align-items: stretch; 
+    }
+
+    .job-card-actions a,
+    .job-card-actions button {
+        margin-bottom: 10px; 
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container,
+    .post-job-container,
+    .register-container,
+    .profile-container,
+    .login-container,
+    .container {
+        width: 100%; /* Full width for very small screens */
+        padding: 15px; /* Adjust padding for smaller screens */
+        margin: 5px auto; /* Center the containers */
+    }
+
+    .dashboard-container h1,
+    .post-job-container h2,
+    .register-container h1,
+    .profile-container h2,
+    .login-container h1 {
+        font-size: 24px; /* Adjust heading size for very small screens */
+    }
+
+    .radio-input label .card {
+        width: 120px; /* Increase gender card size */
+        height: 120px;
+    }
+
+    .radio-input label .card .logo {
+        font-size: 32px; /* Adjust logo size */
+    }
+
+    .radio-input label .card .title {
+        font-size: 14px; /* Adjust title size */
+    }
+}
+
+/* Profile Container */
+.profile-container {
+    background-color: rgba(253, 242, 203, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 500px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.profile-container:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Post Job Container */
+.post-job-container {
+    background-color: rgba(253, 242, 203, 0.9); /* Match other containers */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 500px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    max-height: 90vh;
+    overflow-y: auto;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.post-job-container:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Profile Image */
+.profile-image img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid rgb(191, 89, 30);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 10px;
+}
+
+.profile-image img:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(191, 89, 30, 0.5);
+}
+
+/* Avatar Selection */
+.avatar-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.avatar-option {
+    width: 80px;
+    height: 80px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avatar-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-option:hover {
+    transform: scale(1.1);
+    border-color: rgb(191, 89, 30);
+    box-shadow: 0 0 8px rgba(191, 89, 30, 0.5);
+}
+
+.avatar-option.selected {
+    border-color: rgb(191, 89, 30);
+    box-shadow: 0 0 8px rgba(191, 89, 30, 0.5);
+}
+
+/* Preview Uploaded Image */
+.preview-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: none;
+    margin-top: 10px;
+}
+
+/* Form Inputs */
+input[type="text"], input[type="password"], input[type="number"], select, textarea {
+    border: none;
+    outline: none;
+    border-radius: 15px;
+    padding: 1em;
+    background-color: #f5f5f5; /* Light gray background for a clean look */
+    box-shadow: inset 2px 5px 10px rgba(0, 0, 0, 0.1); /* Subtle inset shadow */
+    transition: 300ms ease-in-out;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1em;
+    color: rgb(37, 41, 40); /* Dark gray text */
+    margin-bottom: 15px; /* Add spacing between fields */
+    font-family: 'Alata', sans-serif; /* Match the font with the rest of the page */
+}
+
+input:focus, textarea:focus, select:focus {
+    background-color: white;
+    transform: scale(1.02); /* Slight zoom effect on focus */
+    box-shadow: 0 0 10px rgba(191, 89, 30, 0.5); /* Glow effect */
+    outline: none; /* Remove default outline */
+}
+
+/* Textarea Styling */
+textarea {
+    resize: vertical; /* Allow vertical resizing only */
+    min-height: 120px; /* Slightly larger height for better usability */
+    padding: 1em;
+}
+
+/* Select Dropdown Styling */
+select {
+    appearance: none; /* Remove default dropdown styling */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="rgb(196, 133, 16)" d="M2 0L0 2h4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px;
+    padding-right: 30px; /* Add space for the dropdown arrow */
+    background-color: #f5f5f5; /* Match input field background */
+    font-size: 1em;
+    color: rgb(37, 41, 40); /* Dark gray text */
+}
+
+input::placeholder, textarea::placeholder {
+    color: rgba(37, 41, 40, 0.6); 
+    font-style: italic;
+}
+
+/* Buttons */
+button, .edit-profile-btn, .logout-btn {
+    padding: 10px;
+    background-color: rgb(191, 89, 30);
+    color: white;
+    border: none;
+    border-radius: 12px; /* Slightly rounded edges */
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+button:hover, .edit-profile-btn:hover, .logout-btn:hover {
+    background-color: rgb(196, 133, 16);
+    transform: scale(1.05);
+}
+
+button:active, .edit-profile-btn:active, .logout-btn:active {
+    transform: translateY(1px);
+}
+
+/* Flash Messages */
+.flash-messages p {
+    padding: 10px;
+    border-radius: 5px;
+    color: rgb(252, 39, 11);
+    text-align: center;
+    font-weight: bold;
+}
+
+.flash-messages .success {
+    background-color: rgb(0, 128, 0);
+    color: white;
+}
+
+.flash-messages .error {
+    background-color: rgb(200, 0, 0);
+    color: white;
+}
+
+.flash-messages .info {
+    background-color: rgb(30, 144, 255);
+    color: white;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    background-color: rgba(253, 242, 203, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 600px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-container:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.dashboard-container h1 {
+    color: rgb(191, 89, 30);
+    margin-bottom: 20px;
+    font-size: 26px;
+}
+
+.dashboard-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.dashboard-buttons a {
+    display: block;
+    margin: 10px auto;
+    padding: 12px 20px;
+    background-color: rgb(191, 89, 30);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    width: 80%;
+    font-size: 16px;
+    font-weight: bold;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.dashboard-buttons a:hover {
+    background-color: rgb(196, 133, 16);
+    transform: scale(1.05);
+}
+
+/* Action Button Style */
+.action-btn {
+    padding: 10px;
+    background-color: rgb(191, 89, 30);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.action-btn:hover {
+    background-color: rgb(196, 133, 16);
+    transform: scale(1.05);
+}
+
+.action-btn:active {
+    transform: translateY(1px);
+}
+
+/* Gender Selector Styles */
+.radio-input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.radio-input label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+.radio-input input {
+    position: absolute;
+    opacity: 0;
+    z-index: -1;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    border: 2px solid darkgray;
+    background-color: lightgray;
+    border-radius: 10px;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    color: darkgray;
+}
+
+.card .logo {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.card .title {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.card:hover {
+    filter: brightness(1.1);
+}
+
+.i_female:checked ~ .female {
+    border-color: #ff87bf;
+    color: #ff87bf;
+    background-color: #ffb8d9;
+}
+
+.i_male:checked ~ .male {
+    border-color: #3d44ff;
+    color: #3d44ff;
+    background-color: #85a5ff;
+}
+
+.i_no-gender:checked ~ .no-gender {
+    border-color: #c9c600;
+    color: #c9c600;
+    background-color: #fffd82;
+}
+
+/* Job Card Actions */
+.job-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 0 5px;
+}
+
+.job-card-actions a {
+    flex: 1;
+    padding: 12px 16px;
+    background-color: #bf591c;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+/* New Bookmark Button Styles */
+/* From Uiverse.io by Tsiangana */
+.ui-bookmark {
+    --icon-size: 24px;
+    --icon-secondary-color: rgb(77, 77, 77);
+    --icon-hover-color: rgb(97, 97, 97);
+    --icon-primary-color: rgb(252, 54, 54);
+    --icon-circle-border: 1px solid var(--icon-primary-color);
+    --icon-circle-size: 35px;
+    --icon-anmt-duration: 0.3s;
+}
+
+.ui-bookmark input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: none;
+}
+
+.ui-bookmark .bookmark {
+    width: var(--icon-size);
+    height: auto;
+    fill: var(--icon-secondary-color);
+    cursor: pointer;
+    -webkit-transition: 0.2s;
+    -o-transition: 0.2s;
+    transition: 0.2s;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    position: relative;
+    -webkit-transform-origin: top;
+    -ms-transform-origin: top;
+    transform-origin: top;
+}
+
+.bookmark::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    -webkit-box-shadow: 0 30px 0 -4px var(--icon-primary-color),
+        30px 0 0 -4px var(--icon-primary-color),
+        0 -30px 0 -4px var(--icon-primary-color),
+        -30px 0 0 -4px var(--icon-primary-color),
+        -22px 22px 0 -4px var(--icon-primary-color),
+        -22px -22px 0 -4px var(--icon-primary-color),
+        22px -22px 0 -4px var(--icon-primary-color),
+        22px 22px 0 -4px var(--icon-primary-color);
+    box-shadow: 0 30px 0 -4px var(--icon-primary-color),
+        30px 0 0 -4px var(--icon-primary-color),
+        0 -30px 0 -4px var(--icon-primary-color),
+        -30px 0 0 -4px var(--icon-primary-color),
+        -22px 22px 0 -4px var(--icon-primary-color),
+        -22px -22px 0 -4px var(--icon-primary-color),
+        22px -22px 0 -4px var(--icon-primary-color),
+        22px 22px 0 -4px var(--icon-primary-color);
+    border-radius: 50%;
+    -webkit-transform: scale(0);
+    -ms-transform: scale(0);
+    transform: scale(0);
+    padding: 1px;
+}
+
+.bookmark::before {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    border: var(--icon-circle-border);
+    opacity: 0;
+}
+
+/* actions */
+
+.ui-bookmark:hover .bookmark {
+    fill: var(--icon-hover-color);
+}
+
+.ui-bookmark input:checked + .bookmark::after {
+    -webkit-animation: circles var(--icon-anmt-duration)
+        cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: circles var(--icon-anmt-duration)
+        cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    -webkit-animation-delay: var(--icon-anmt-duration);
+    animation-delay: var(--icon-anmt-duration);
+}
+
+.ui-bookmark input:checked + .bookmark {
+    fill: var(--icon-primary-color);
+    -webkit-animation: bookmark var(--icon-anmt-duration) forwards;
+    animation: bookmark var(--icon-anmt-duration) forwards;
+    -webkit-transition-delay: 0.3s;
+    -o-transition-delay: 0.3s;
+    transition-delay: 0.3s;
+}
+
+.ui-bookmark input:checked + .bookmark::before {
+    -webkit-animation: circle var(--icon-anmt-duration)
+        cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: circle var(--icon-anmt-duration)
+        cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    -webkit-animation-delay: var(--icon-anmt-duration);
+    animation-delay: var(--icon-anmt-duration);
+}
+
+@-webkit-keyframes circles {
+    from {
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    }
+
+    40% {
+        opacity: 1;
+    }
+
+    to {
+        -webkit-transform: scale(0.8);
+        transform: scale(0.8);
+        opacity: 0;
+    }
+}
+
+@keyframes circles {
+    from {
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    }
+
+    40% {
+        opacity: 1;
+    }
+
+    to {
+        -webkit-transform: scale(0.8);
+        transform: scale(0.8);
+        opacity: 0;
+    }
+}
+
+@-webkit-keyframes bookmark {
+    50% {
+        -webkit-transform: scaleY(0.6);
+        transform: scaleY(0.6);
+    }
+
+    100% {
+        -webkit-transform: scaleY(1);
+        transform: scaleY(1);
+    }
+}
+
+@keyframes bookmark {
+    50% {
+        -webkit-transform: scaleY(0.6);
+        transform: scaleY(0.6);
+    }
+
+    100% {
+        -webkit-transform: scaleY(1);
+        transform: scaleY(1);
+    }
+}
+
+@-webkit-keyframes circle {
+    from {
+        width: 0;
+        height: 0;
+        opacity: 0;
+    }
+
+    90% {
+        width: var(--icon-circle-size);
+        height: var(--icon-circle-size);
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes circle {
+    from {
+        width: 0;
+        height: 0;
+        opacity: 0;
+    }
+
+    90% {
+        width: var(--icon-circle-size);
+        height: var(--icon-circle-size);
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
