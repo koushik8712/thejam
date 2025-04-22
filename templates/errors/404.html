@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="error-container">
+        <h1>{{ get_text('page_not_found') }}</h1>
+        <p>{{ get_text('page_not_found_message') }}</p>
+        <p><a href="{{ url_for('home') }}">{{ get_text('back_to_home') }}</a></p>
+    </div>
+{% endblock %}

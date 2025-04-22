@@ -8,6 +8,9 @@ from werkzeug.utils import secure_filename
 import secrets
 from datetime import datetime, timedelta
 from dotenv import load_dotenv  # Added for environment variables
+import logging
+from logging.handlers import RotatingFileHandler
+import traceback
 
 # Load environment variables from .env file
 load_dotenv()
@@ -626,8 +629,36 @@ def saved_jobs():
 
     return render_template('saved_jobs.html', saved_jobs=saved_jobs)
 
+# Configure logging
+if not app.debug:
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    file_handler = RotatingFileHandler('logs/rural_jobs.log', maxBytes=10240, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('Rural Jobs startup')
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('errors/404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db = get_db_connection()
+    db.rollback()
+    db.close()
+    app.logger.error('Server Error: %s', str(error))
+    app.logger.error(traceback.format_exc())
+    return render_template('errors/500.html'), 500
+
 port = int(os.environ.get('PORT', 5000))
 app.run(host='0.0.0.0', port=port)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    if not app.debug:
+        app.logger.info('Rural Jobs Portal is starting up...')
+    app.run(debug=False)
