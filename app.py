@@ -14,6 +14,7 @@ import traceback
 from mysql.connector import pooling
 import time
 import socket
+from contextlib import contextmanager
 
 # Load environment variables from .env file
 load_dotenv()
@@ -49,30 +50,33 @@ def ensure_upload_dirs():
 
 ensure_upload_dirs()
 
-def get_db_connection(max_retries=3, retry_delay=1):
-    """Get database connection with retry logic"""
-    dbconfig = {
-        "pool_name": "mypool",
-        "pool_size": 5,
-        "host": os.getenv('DB_HOST', 'localhost'),
-        "user": os.getenv('DB_USER', 'root'),
-        "password": os.getenv('DB_PASSWORD', 'projectjam@123'),
-        "database": os.getenv('DB_NAME', 'rural_job_portal'),
-        "port": int(os.getenv('DB_PORT', 3306)),
-        "connect_timeout": 10
-    }
-
-    for attempt in range(max_retries):
-        try:
-            if not hasattr(get_db_connection, "pool"):
-                get_db_connection.pool = mysql.connector.pooling.MySQLConnectionPool(**dbconfig)
-            return get_db_connection.pool.get_connection()
-        except mysql.connector.Error as err:
-            app.logger.error(f"Database connection attempt {attempt + 1} failed: {err}")
-            if attempt == max_retries - 1:
-                # On last attempt, raise the error
-                raise
-            time.sleep(retry_delay)
+@contextmanager
+def get_db_connection():
+    conn = None
+    try:
+        # Get database configuration from environment
+        db_config = {
+            "host": os.getenv('localhost'),
+            "user": os.getenv('root'),
+            "password": os.getenv('projectjam@123'),
+            "database": os.getenv('rural_job_portal'),
+            "port": int(os.getenv('DB_PORT', 3306)),
+            "ssl_mode": "REQUIRED" if os.getenv('FLASK_ENV') == 'production' else None,
+            "connect_timeout": 10
+        }
+        
+        # Remove None values
+        db_config = {k: v for k, v in db_config.items() if v is not None}
+        
+        conn = mysql.connector.connect(**db_config)
+        yield conn
+    except mysql.connector.Error as e:
+        app.logger.error(f"Database connection failed: {e}")
+        flash("Unable to connect to database. Please try again later.", "error")
+        raise
+    finally:
+        if conn is not None and conn.is_connected():
+            conn.close()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -97,12 +101,11 @@ def utility_processor():
 
     saved_count = 0
     if 'user_id' in session:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM bookmarks WHERE user_id = %s", (session['user_id'],))
-        saved_count = cursor.fetchone()[0]
-        cursor.close()
-        conn.close()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM bookmarks WHERE user_id = %s", (session['user_id'],))
+            saved_count = cursor.fetchone()[0]
+            cursor.close()
 
     return dict(get_text=get_text, saved_count=saved_count)
 
@@ -118,27 +121,32 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'GET':
-        return render_template('login.html')
-        
     if request.method == 'POST':
-        login_id = request.form['login_id']
-        password = request.form['password']
+        try:
+            login_id = request.form['login_id']
+            password = request.form['password']
 
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE username = %s OR phone_number = %s", (login_id, login_id))
-        user = cursor.fetchone()
-        cursor.close()
-        conn.close()
+            with get_db_connection() as conn:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute("SELECT * FROM users WHERE username = %s OR phone_number = %s", 
+                             (login_id, login_id))
+                user = cursor.fetchone()
+                cursor.close()
 
-        if user and bcrypt.checkpw(password.encode(), user['password'].encode()):
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            return redirect(url_for('dashboard'))
-        else:
-            flash("Incorrect Password or Username/Phone", "danger")
+                if user and bcrypt.checkpw(password.encode(), user['password'].encode()):
+                    session['user_id'] = user['id']
+                    session['username'] = user['username']
+                    return redirect(url_for('dashboard'))
+                else:
+                    flash("Incorrect Password or Username/Phone", "danger")
+                    return redirect(url_for('home'))
+
+        except mysql.connector.Error as e:
+            app.logger.error(f"Database error during login: {e}")
+            flash("Unable to process login. Please try again.", "error")
             return redirect(url_for('home'))
+
+    return render_template('login.html')
 
 @app.route('/login_with_otp')
 def login_with_otp():
@@ -155,17 +163,16 @@ def send_otp():
     otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
     expires_at = datetime.now() + timedelta(minutes=10)
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
 
-    # Store OTP in database
-    cursor.execute(
-        "INSERT INTO otp_verifications (phone_number, otp, expires_at) VALUES (%s, %s, %s)",
-        (phone_number, otp, expires_at)
-    )
-    conn.commit()
-    cursor.close()
-    conn.close()
+        # Store OTP in database
+        cursor.execute(
+            "INSERT INTO otp_verifications (phone_number, otp, expires_at) VALUES (%s, %s, %s)",
+            (phone_number, otp, expires_at)
+        )
+        conn.commit()
+        cursor.close()
 
     # For testing, show OTP (in production, send via SMS)
     flash(f'Your OTP is: {otp}', 'info')
@@ -176,46 +183,44 @@ def verify_otp():
     phone_number = request.form.get('phone_number')
     otp = request.form.get('otp')
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
 
-    # Verify OTP
-    cursor.execute(
-        """SELECT * FROM otp_verifications 
-           WHERE phone_number = %s 
-           AND otp = %s 
-           AND expires_at > NOW() 
-           AND is_used = FALSE
-           ORDER BY created_at DESC LIMIT 1""",
-        (phone_number, otp)
-    )
-    verification = cursor.fetchone()
-
-    if verification:
-        # Mark OTP as used
+        # Verify OTP
         cursor.execute(
-            "UPDATE otp_verifications SET is_used = TRUE WHERE id = %s",
-            (verification['id'],)
+            """SELECT * FROM otp_verifications 
+               WHERE phone_number = %s 
+               AND otp = %s 
+               AND expires_at > NOW() 
+               AND is_used = FALSE
+               ORDER BY created_at DESC LIMIT 1""",
+            (phone_number, otp)
         )
-        
-        # Get user details
-        cursor.execute("SELECT * FROM users WHERE phone_number = %s", (phone_number,))
-        user = cursor.fetchone()
-        
-        if user:
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            conn.commit()
-            cursor.close()
-            conn.close()
-            return redirect(url_for('dashboard'))
-        else:
-            flash('User not found with this phone number', 'error')
-    else:
-        flash('Invalid or expired OTP', 'error')
+        verification = cursor.fetchone()
 
-    cursor.close()
-    conn.close()
+        if verification:
+            # Mark OTP as used
+            cursor.execute(
+                "UPDATE otp_verifications SET is_used = TRUE WHERE id = %s",
+                (verification['id'],)
+            )
+            
+            # Get user details
+            cursor.execute("SELECT * FROM users WHERE phone_number = %s", (phone_number,))
+            user = cursor.fetchone()
+            
+            if user:
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                conn.commit()
+                cursor.close()
+                return redirect(url_for('dashboard'))
+            else:
+                flash('User not found with this phone number', 'error')
+        else:
+            flash('Invalid or expired OTP', 'error')
+
+        cursor.close()
     return redirect(url_for('login_with_otp'))
 
 @app.route('/dashboard')
@@ -251,71 +256,70 @@ def register():
                 return render_template('register.html', avatars=AVATARS, form_data=form_data)
 
             # Database connection with context management
-            conn = get_db_connection()
-            cursor = conn.cursor(dictionary=True)
+            with get_db_connection() as conn:
+                cursor = conn.cursor(dictionary=True)
 
-            try:
-                # Check duplicate phone
-                cursor.execute("SELECT * FROM users WHERE phone_number = %s", (form_data['phone_number'],))
-                if cursor.fetchone():
-                    flash("This phone number is already registered!", "danger")
+                try:
+                    # Check duplicate phone
+                    cursor.execute("SELECT * FROM users WHERE phone_number = %s", (form_data['phone_number'],))
+                    if cursor.fetchone():
+                        flash("This phone number is already registered!", "danger")
+                        return render_template('register.html', avatars=AVATARS, form_data=form_data)
+
+                    # Check duplicate username
+                    cursor.execute("SELECT * FROM users WHERE username = %s", (form_data['username'],))
+                    if cursor.fetchone():
+                        flash("This username is already taken!", "danger")
+                        return render_template('register.html', avatars=AVATARS, form_data=form_data)
+
+                    if request.form.get('password') != request.form.get('confirm_password'):
+                        flash("Passwords do not match!", "danger")
+                        return render_template('register.html', avatars=AVATARS, form_data=form_data)
+
+                    # Hash password
+                    hashed_password = bcrypt.hashpw(request.form.get('password').encode('utf-8'), 
+                                                 bcrypt.gensalt()).decode('utf-8')
+
+                    # Handle profile picture
+                    profile_picture = "default_profile.png"
+                    file = request.files.get('avatar_file')
+                    avatar_choice = request.form.get('avatar_choice')
+
+                    if file and file.filename:
+                        if allowed_file(file.filename):
+                            try:
+                                filename = secure_filename(file.filename)
+                                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                                file.save(file_path)
+                                profile_picture = filename
+                            except Exception as e:
+                                app.logger.error(f"File upload error: {str(e)}")
+                                flash("Error uploading file. Using default profile picture.", "warning")
+                        else:
+                            flash("Invalid file type. Using default profile picture.", "warning")
+                    elif avatar_choice in AVATARS:
+                        profile_picture = avatar_choice
+
+                    # Insert user
+                    cursor.execute(
+                        """INSERT INTO users 
+                           (full_name, phone_number, username, password, gender, bio, location, profile_picture) 
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                        (form_data['full_name'], form_data['phone_number'], form_data['username'],
+                         hashed_password, form_data['gender'], form_data['bio'], form_data['location'],
+                         profile_picture)
+                    )
+                    conn.commit()
+                    flash("Registration successful!", "success")
+                    return redirect(url_for('home'))
+
+                except Exception as e:
+                    conn.rollback()
+                    app.logger.error(f"Database error during registration: {str(e)}")
+                    flash("An error occurred during registration. Please try again.", "danger")
                     return render_template('register.html', avatars=AVATARS, form_data=form_data)
-
-                # Check duplicate username
-                cursor.execute("SELECT * FROM users WHERE username = %s", (form_data['username'],))
-                if cursor.fetchone():
-                    flash("This username is already taken!", "danger")
-                    return render_template('register.html', avatars=AVATARS, form_data=form_data)
-
-                if request.form.get('password') != request.form.get('confirm_password'):
-                    flash("Passwords do not match!", "danger")
-                    return render_template('register.html', avatars=AVATARS, form_data=form_data)
-
-                # Hash password
-                hashed_password = bcrypt.hashpw(request.form.get('password').encode('utf-8'), 
-                                             bcrypt.gensalt()).decode('utf-8')
-
-                # Handle profile picture
-                profile_picture = "default_profile.png"
-                file = request.files.get('avatar_file')
-                avatar_choice = request.form.get('avatar_choice')
-
-                if file and file.filename:
-                    if allowed_file(file.filename):
-                        try:
-                            filename = secure_filename(file.filename)
-                            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                            file.save(file_path)
-                            profile_picture = filename
-                        except Exception as e:
-                            app.logger.error(f"File upload error: {str(e)}")
-                            flash("Error uploading file. Using default profile picture.", "warning")
-                    else:
-                        flash("Invalid file type. Using default profile picture.", "warning")
-                elif avatar_choice in AVATARS:
-                    profile_picture = avatar_choice
-
-                # Insert user
-                cursor.execute(
-                    """INSERT INTO users 
-                       (full_name, phone_number, username, password, gender, bio, location, profile_picture) 
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-                    (form_data['full_name'], form_data['phone_number'], form_data['username'],
-                     hashed_password, form_data['gender'], form_data['bio'], form_data['location'],
-                     profile_picture)
-                )
-                conn.commit()
-                flash("Registration successful!", "success")
-                return redirect(url_for('home'))
-
-            except Exception as e:
-                conn.rollback()
-                app.logger.error(f"Database error during registration: {str(e)}")
-                flash("An error occurred during registration. Please try again.", "danger")
-                return render_template('register.html', avatars=AVATARS, form_data=form_data)
-            finally:
-                cursor.close()
-                conn.close()
+                finally:
+                    cursor.close()
 
         except Exception as e:
             app.logger.error(f"Registration error: {str(e)}\n{traceback.format_exc()}")
@@ -331,12 +335,11 @@ def profile():
         return redirect(url_for('home'))
 
     user_id = session['user_id']
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT full_name, username, phone_number, gender, bio, location, profile_picture FROM users WHERE id = %s", (user_id,))
-    user = cursor.fetchone()
-    cursor.close()
-    conn.close()
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT full_name, username, phone_number, gender, bio, location, profile_picture FROM users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        cursor.close()
 
     return render_template('profile.html', user=user, avatars=AVATARS)
 
@@ -347,47 +350,45 @@ def edit_profile():
         return redirect(url_for('home'))
 
     user_id = session['user_id']
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
 
-    if request.method == 'POST':
-        full_name = request.form.get('full_name')
-        phone_number = request.form.get('phone_number')
-        gender = request.form.get('gender')
-        bio = request.form.get('bio')
-        location = request.form.get('location')
-        avatar_choice = request.form.get('avatar_choice')
-        file = request.files.get('avatar_file')
+        if request.method == 'POST':
+            full_name = request.form.get('full_name')
+            phone_number = request.form.get('phone_number')
+            gender = request.form.get('gender')
+            bio = request.form.get('bio')
+            location = request.form.get('location')
+            avatar_choice = request.form.get('avatar_choice')
+            file = request.files.get('avatar_file')
 
-        profile_picture = None
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            profile_picture = filename
-        elif avatar_choice in AVATARS:
-            profile_picture = avatar_choice
+            profile_picture = None
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                profile_picture = filename
+            elif avatar_choice in AVATARS:
+                profile_picture = avatar_choice
 
-        update_query = """
-            UPDATE users SET full_name = %s, phone_number = %s, gender = %s, bio = %s, location = %s
-        """ + (", profile_picture = %s" if profile_picture else "") + " WHERE id = %s"
+            update_query = """
+                UPDATE users SET full_name = %s, phone_number = %s, gender = %s, bio = %s, location = %s
+            """ + (", profile_picture = %s" if profile_picture else "") + " WHERE id = %s"
 
-        data = [full_name, phone_number, gender, bio, location]
-        if profile_picture:
-            data.append(profile_picture)
-        data.append(user_id)
+            data = [full_name, phone_number, gender, bio, location]
+            if profile_picture:
+                data.append(profile_picture)
+            data.append(user_id)
 
-        cursor.execute(update_query, tuple(data))
-        conn.commit()
+            cursor.execute(update_query, tuple(data))
+            conn.commit()
+            cursor.close()
+
+            flash("Profile updated successfully!", "success")
+            return redirect(url_for('profile'))
+
+        cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
         cursor.close()
-        conn.close()
-
-        flash("Profile updated successfully!", "success")
-        return redirect(url_for('profile'))
-
-    cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-    user = cursor.fetchone()
-    cursor.close()
-    conn.close()
 
     return render_template('edit_profile.html', user=user, avatars=AVATARS)
 
@@ -409,15 +410,14 @@ def post_job():
             flash("All fields except salary are required!", "danger")
             return redirect(url_for('post_job'))
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO jobs (title, description, location, salary, phone_number, job_type, posted_by) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            (title, description, location, salary, phone_number, job_type, session['user_id'])
-        )
-        conn.commit()
-        cursor.close()
-        conn.close()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO jobs (title, description, location, salary, phone_number, job_type, posted_by) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                (title, description, location, salary, phone_number, job_type, session['user_id'])
+            )
+            conn.commit()
+            cursor.close()
 
         flash("Job posted successfully!", "success")
         return redirect(url_for('post_job'))
@@ -436,57 +436,55 @@ def search_jobs():
     date_posted = request.form.get('date_posted', '')
     job_type = request.form.get('job_type', '')
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    query = """
-    SELECT jobs.*, users.full_name, users.profile_picture FROM jobs
-    JOIN users ON jobs.posted_by = users.id
-    """
-    filters = []
-    params = []
-
-    if filter_by == 'salary':
-        if salary_min:
-            filters.append("CAST(jobs.salary AS UNSIGNED) >= %s")
-            params.append(salary_min)
-        if salary_max:
-            filters.append("CAST(jobs.salary AS UNSIGNED) <= %s")
-            params.append(salary_max)
-    elif filter_by == 'job_title' and job_title:
-        filters.append("jobs.title = %s")
-        params.append(job_title)
-    elif filter_by == 'location' and location:
-        filters.append("jobs.location LIKE %s")
-        params.append(f"%{location}%")
-    elif filter_by == 'date_posted' and date_posted:
-        filters.append("DATEDIFF(NOW(), jobs.created_at) <= %s")
-        params.append(date_posted)
-    elif filter_by == 'job_type' and job_type:
-        filters.append("jobs.job_type = %s")
-        params.append(job_type)
-
-    if filters:
-        query += " WHERE " + " AND ".join(filters)
-
-    if sort_salary == 'high_to_low':
-        query += " ORDER BY CAST(jobs.salary AS UNSIGNED) DESC"
-    elif sort_salary == 'low_to_high':
-        query += " ORDER BY CAST(jobs.salary AS UNSIGNED) ASC"
-
-    cursor.execute(query, tuple(params))
-    jobs = cursor.fetchall()
-
-    if 'user_id' in session:
-        user_id = session['user_id']
-        conn = get_db_connection()
+    with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT job_id FROM bookmarks WHERE user_id = %s", (user_id,))
-        saved_jobs = [row['job_id'] for row in cursor.fetchall()]
+
+        query = """
+        SELECT jobs.*, users.full_name, users.profile_picture FROM jobs
+        JOIN users ON jobs.posted_by = users.id
+        """
+        filters = []
+        params = []
+
+        if filter_by == 'salary':
+            if salary_min:
+                filters.append("CAST(jobs.salary AS UNSIGNED) >= %s")
+                params.append(salary_min)
+            if salary_max:
+                filters.append("CAST(jobs.salary AS UNSIGNED) <= %s")
+                params.append(salary_max)
+        elif filter_by == 'job_title' and job_title:
+            filters.append("jobs.title = %s")
+            params.append(job_title)
+        elif filter_by == 'location' and location:
+            filters.append("jobs.location LIKE %s")
+            params.append(f"%{location}%")
+        elif filter_by == 'date_posted' and date_posted:
+            filters.append("DATEDIFF(NOW(), jobs.created_at) <= %s")
+            params.append(date_posted)
+        elif filter_by == 'job_type' and job_type:
+            filters.append("jobs.job_type = %s")
+            params.append(job_type)
+
+        if filters:
+            query += " WHERE " + " AND ".join(filters)
+
+        if sort_salary == 'high_to_low':
+            query += " ORDER BY CAST(jobs.salary AS UNSIGNED) DESC"
+        elif sort_salary == 'low_to_high':
+            query += " ORDER BY CAST(jobs.salary AS UNSIGNED) ASC"
+
+        cursor.execute(query, tuple(params))
+        jobs = cursor.fetchall()
+
+        if 'user_id' in session:
+            user_id = session['user_id']
+            cursor.execute("SELECT job_id FROM bookmarks WHERE user_id = %s", (user_id,))
+            saved_jobs = [row['job_id'] for row in cursor.fetchall()]
+        else:
+            saved_jobs = []
+
         cursor.close()
-        conn.close()
-    else:
-        saved_jobs = []
 
     return render_template(
         "search_jobs.html",
@@ -508,28 +506,29 @@ def forgot_password():
     if request.method == 'POST':
         login_id = request.form.get('login_id')  # Can be username or phone
         
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE username = %s OR phone_number = %s", (login_id, login_id))
-        user = cursor.fetchone()
-        
-        if user:
-            # Generate reset token
-            reset_token = secrets.token_urlsafe(32)
-            expires_at = datetime.now() + timedelta(hours=1)
+        with get_db_connection() as conn:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM users WHERE username = %s OR phone_number = %s", (login_id, login_id))
+            user = cursor.fetchone()
             
-            # Store reset token in database
-            cursor.execute(
-                "INSERT INTO password_resets (user_id, token, expires_at) VALUES (%s, %s, %s)",
-                (user['id'], reset_token, expires_at)
-            )
-            conn.commit()
+            if user:
+                # Generate reset token
+                reset_token = secrets.token_urlsafe(32)
+                expires_at = datetime.now() + timedelta(hours=1)
+                
+                # Store reset token in database
+                cursor.execute(
+                    "INSERT INTO password_resets (user_id, token, expires_at) VALUES (%s, %s, %s)",
+                    (user['id'], reset_token, expires_at)
+                )
+                conn.commit()
+                
+              
+                flash(f"Reset token: {reset_token}", "info")
+                return redirect(url_for('reset_password', token=reset_token))
             
-          
-            flash(f"Reset token: {reset_token}", "info")
-            return redirect(url_for('reset_password', token=reset_token))
-        
-        flash("No account found with that username/phone number", "error")
+            flash("No account found with that username/phone number", "error")
+            cursor.close()
         
     return render_template('forgot_password.html')
 
@@ -547,35 +546,36 @@ def reset_password(token):
             flash("Passwords don't match", "error")
             return render_template('reset_password.html', token=token)
         
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        
-        # Get reset record and check if valid
-        cursor.execute(
-            """SELECT pr.*, u.username 
-               FROM password_resets pr
-               JOIN users u ON u.id = pr.user_id 
-               WHERE pr.token = %s AND pr.expires_at > NOW() AND pr.used = FALSE""",
-            (token,)
-        )
-        reset = cursor.fetchone()
-        
-        if reset:
-            # Update password
-            hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
-            cursor.execute(
-                "UPDATE users SET password = %s WHERE id = %s",
-                (hashed_password, reset['user_id'])
-            )
-            # Mark token as used
-            cursor.execute("UPDATE password_resets SET used = TRUE WHERE id = %s", (reset['id'],))
-            conn.commit()
+        with get_db_connection() as conn:
+            cursor = conn.cursor(dictionary=True)
             
-            flash(f"Password reset successful! You can now login with your new password", "success")
-            return redirect(url_for('login'))
-        else:
-            flash("Invalid or expired reset token", "error")
-            return redirect(url_for('forgot_password'))
+            # Get reset record and check if valid
+            cursor.execute(
+                """SELECT pr.*, u.username 
+                   FROM password_resets pr
+                   JOIN users u ON u.id = pr.user_id 
+                   WHERE pr.token = %s AND pr.expires_at > NOW() AND pr.used = FALSE""",
+                (token,)
+            )
+            reset = cursor.fetchone()
+            
+            if reset:
+                # Update password
+                hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
+                cursor.execute(
+                    "UPDATE users SET password = %s WHERE id = %s",
+                    (hashed_password, reset['user_id'])
+                )
+                # Mark token as used
+                cursor.execute("UPDATE password_resets SET used = TRUE WHERE id = %s", (reset['id'],))
+                conn.commit()
+                
+                flash(f"Password reset successful! You can now login with your new password", "success")
+                return redirect(url_for('login'))
+            else:
+                flash("Invalid or expired reset token", "error")
+                cursor.close()
+                return redirect(url_for('forgot_password'))
 
     # GET request - show reset form        
     return render_template('reset_password.html', token=token)
@@ -621,27 +621,26 @@ def save_job(job_id):
         return jsonify({'success': False, 'message': 'User not logged in'}), 401
 
     user_id = session['user_id']
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
 
-    try:
-        # Toggle save state
-        cursor.execute("SELECT * FROM bookmarks WHERE user_id = %s AND job_id = %s", (user_id, job_id))
-        if cursor.fetchone():
-            cursor.execute("DELETE FROM bookmarks WHERE user_id = %s AND job_id = %s", (user_id, job_id))
-            saved = False
-        else:
-            cursor.execute("INSERT INTO bookmarks (user_id, job_id) VALUES (%s, %s)", (user_id, job_id))
-            saved = True
+        try:
+            # Toggle save state
+            cursor.execute("SELECT * FROM bookmarks WHERE user_id = %s AND job_id = %s", (user_id, job_id))
+            if cursor.fetchone():
+                cursor.execute("DELETE FROM bookmarks WHERE user_id = %s AND job_id = %s", (user_id, job_id))
+                saved = False
+            else:
+                cursor.execute("INSERT INTO bookmarks (user_id, job_id) VALUES (%s, %s)", (user_id, job_id))
+                saved = True
 
-        conn.commit()
-        return jsonify({'success': True, 'saved': saved})
-    except Exception as e:
-        conn.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 500
-    finally:
-        cursor.close()
-        conn.close()
+            conn.commit()
+            return jsonify({'success': True, 'saved': saved})
+        except Exception as e:
+            conn.rollback()
+            return jsonify({'success': False, 'message': str(e)}), 500
+        finally:
+            cursor.close()
 
 @app.route('/saved_jobs', methods=['GET'])
 def saved_jobs():
@@ -650,22 +649,20 @@ def saved_jobs():
         return redirect(url_for('home'))
 
     user_id = session['user_id']
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
 
-    # Fetch saved jobs
-    cursor.execute("""
-        SELECT jobs.*, bookmarks.created_at AS saved_at, users.full_name, users.profile_picture
-        FROM bookmarks
-        JOIN jobs ON bookmarks.job_id = jobs.id
-        JOIN users ON jobs.posted_by = users.id
-        WHERE bookmarks.user_id = %s
-        ORDER BY bookmarks.created_at DESC
-    """, (user_id,))
-    saved_jobs = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
+        # Fetch saved jobs
+        cursor.execute("""
+            SELECT jobs.*, bookmarks.created_at AS saved_at, users.full_name, users.profile_picture
+            FROM bookmarks
+            JOIN jobs ON bookmarks.job_id = jobs.id
+            JOIN users ON jobs.posted_by = users.id
+            WHERE bookmarks.user_id = %s
+            ORDER BY bookmarks.created_at DESC
+        """, (user_id,))
+        saved_jobs = cursor.fetchall()
+        cursor.close()
 
     return render_template('saved_jobs.html', saved_jobs=saved_jobs)
 
@@ -673,12 +670,11 @@ def saved_jobs():
 def health_check():
     try:
         # Test database connection
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT 1')
-        cursor.fetchone()
-        cursor.close()
-        conn.close()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT 1')
+            cursor.fetchone()
+            cursor.close()
         return jsonify({"status": "healthy", "database": "connected"}), 200
     except Exception as e:
         app.logger.error(f"Health check failed: {str(e)}")
