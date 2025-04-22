@@ -40,6 +40,12 @@ RURAL_JOB_TITLES = [
     "Water Resource Manager", "Farm Equipment Operator", "Seed Distributor"
 ]
 
+def ensure_upload_dirs():
+    for directory in [UPLOAD_FOLDER, AVATAR_FOLDER]:
+        os.makedirs(directory, exist_ok=True)
+
+ensure_upload_dirs()
+
 def get_db_connection():
     # Use environment variables for database connection
     return mysql.connector.connect(
@@ -205,81 +211,97 @@ def dashboard():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        # Get form data
-        form_data = {
-            'full_name': request.form.get('full_name'),
-            'phone_number': request.form.get('phone_number'),
-            'username': request.form.get('username'),
-            'gender': request.form.get('gender', 'Not specified'),
-            'bio': request.form.get('bio', ''),
-            'location': request.form.get('location', '')
-        }
-
-        # Check for mandatory fields
-        if not all([form_data['full_name'], form_data['phone_number'], form_data['username'], 
-                   request.form.get('password'), request.form.get('confirm_password')]):
-            flash("Full Name, Phone Number, Username and Password are mandatory!", "danger")
-            return render_template('register.html', avatars=AVATARS, form_data=form_data)
-
-        # Validate phone number format and length
-        if not form_data['phone_number'].isdigit() or len(form_data['phone_number']) != 10:
-            flash("Phone number should be exactly 10 digits!", "danger")
-            return render_template('register.html', avatars=AVATARS, form_data=form_data)
-
-        # Check for duplicate phone number and username
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        
-        # Check duplicate phone
-        cursor.execute("SELECT * FROM users WHERE phone_number = %s", (form_data['phone_number'],))
-        if cursor.fetchone():
-            cursor.close()
-            conn.close()
-            flash("This phone number is already registered!", "danger")
-            return render_template('register.html', avatars=AVATARS, form_data=form_data)
-            
-        # Check duplicate username
-        cursor.execute("SELECT * FROM users WHERE username = %s", (form_data['username'],))
-        if cursor.fetchone():
-            cursor.close()
-            conn.close()
-            flash("This username is already taken!", "danger")
-            return render_template('register.html', avatars=AVATARS, form_data=form_data)
-
-        if request.form.get('password') != request.form.get('confirm_password'):
-            flash("Passwords do not match!", "danger")
-            return render_template('register.html', avatars=AVATARS, form_data=form_data)
-
-        hashed_password = bcrypt.hashpw(request.form.get('password').encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-        profile_picture = "default_profile.png"
-        file = request.files.get('avatar_file')
-        avatar_choice = request.form.get('avatar_choice')
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-            profile_picture = filename
-        elif avatar_choice in AVATARS:
-            profile_picture = avatar_choice
-
         try:
-            cursor.execute(
-                "INSERT INTO users (full_name, phone_number, username, password, gender, bio, location, profile_picture) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                (form_data['full_name'], form_data['phone_number'], form_data['username'], hashed_password, form_data['gender'], form_data['bio'], form_data['location'], profile_picture)
-            )
-            conn.commit()
-            cursor.close()
-            conn.close()
+            # Get form data
+            form_data = {
+                'full_name': request.form.get('full_name'),
+                'phone_number': request.form.get('phone_number'),
+                'username': request.form.get('username'),
+                'gender': request.form.get('gender', 'Not specified'),
+                'bio': request.form.get('bio', ''),
+                'location': request.form.get('location', '')
+            }
 
-            flash("Registration successful!", "success")
-            return redirect(url_for('home'))
+            # Validate form data
+            if not all([form_data['full_name'], form_data['phone_number'], form_data['username'],
+                       request.form.get('password'), request.form.get('confirm_password')]):
+                flash("Full Name, Phone Number, Username and Password are mandatory!", "danger")
+                return render_template('register.html', avatars=AVATARS, form_data=form_data)
+
+            if not form_data['phone_number'].isdigit() or len(form_data['phone_number']) != 10:
+                flash("Phone number should be exactly 10 digits!", "danger")
+                return render_template('register.html', avatars=AVATARS, form_data=form_data)
+
+            # Database connection with context management
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            try:
+                # Check duplicate phone
+                cursor.execute("SELECT * FROM users WHERE phone_number = %s", (form_data['phone_number'],))
+                if cursor.fetchone():
+                    flash("This phone number is already registered!", "danger")
+                    return render_template('register.html', avatars=AVATARS, form_data=form_data)
+
+                # Check duplicate username
+                cursor.execute("SELECT * FROM users WHERE username = %s", (form_data['username'],))
+                if cursor.fetchone():
+                    flash("This username is already taken!", "danger")
+                    return render_template('register.html', avatars=AVATARS, form_data=form_data)
+
+                if request.form.get('password') != request.form.get('confirm_password'):
+                    flash("Passwords do not match!", "danger")
+                    return render_template('register.html', avatars=AVATARS, form_data=form_data)
+
+                # Hash password
+                hashed_password = bcrypt.hashpw(request.form.get('password').encode('utf-8'), 
+                                             bcrypt.gensalt()).decode('utf-8')
+
+                # Handle profile picture
+                profile_picture = "default_profile.png"
+                file = request.files.get('avatar_file')
+                avatar_choice = request.form.get('avatar_choice')
+
+                if file and file.filename:
+                    if allowed_file(file.filename):
+                        try:
+                            filename = secure_filename(file.filename)
+                            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                            file.save(file_path)
+                            profile_picture = filename
+                        except Exception as e:
+                            app.logger.error(f"File upload error: {str(e)}")
+                            flash("Error uploading file. Using default profile picture.", "warning")
+                    else:
+                        flash("Invalid file type. Using default profile picture.", "warning")
+                elif avatar_choice in AVATARS:
+                    profile_picture = avatar_choice
+
+                # Insert user
+                cursor.execute(
+                    """INSERT INTO users 
+                       (full_name, phone_number, username, password, gender, bio, location, profile_picture) 
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                    (form_data['full_name'], form_data['phone_number'], form_data['username'],
+                     hashed_password, form_data['gender'], form_data['bio'], form_data['location'],
+                     profile_picture)
+                )
+                conn.commit()
+                flash("Registration successful!", "success")
+                return redirect(url_for('home'))
+
+            except Exception as e:
+                conn.rollback()
+                app.logger.error(f"Database error during registration: {str(e)}")
+                flash("An error occurred during registration. Please try again.", "danger")
+                return render_template('register.html', avatars=AVATARS, form_data=form_data)
+            finally:
+                cursor.close()
+                conn.close()
+
         except Exception as e:
-            conn.rollback()
-            cursor.close()
-            conn.close()
-            # Generic error message instead of exposing database error
-            flash("An error occurred during registration. Please try again.", "danger")
+            app.logger.error(f"Registration error: {str(e)}\n{traceback.format_exc()}")
+            flash("An unexpected error occurred. Please try again.", "danger")
             return render_template('register.html', avatars=AVATARS, form_data=form_data)
 
     return render_template('register.html', avatars=AVATARS, form_data={})
