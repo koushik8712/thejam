@@ -11,6 +11,9 @@ from dotenv import load_dotenv  # Added for environment variables
 import logging
 from logging.handlers import RotatingFileHandler
 import traceback
+from mysql.connector import pooling
+import time
+import socket
 
 # Load environment variables from .env file
 load_dotenv()
@@ -46,15 +49,30 @@ def ensure_upload_dirs():
 
 ensure_upload_dirs()
 
-def get_db_connection():
-    # Use environment variables for database connection
-    return mysql.connector.connect(
-        host=os.getenv('DB_HOST', 'localhost'),
-        user=os.getenv('DB_USER', 'root'),
-        password=os.getenv('DB_PASSWORD', 'projectjam@123'),
-        database=os.getenv('DB_NAME', 'rural_job_portal'),
-        port=int(os.getenv('DB_PORT', 3306))
-    )
+def get_db_connection(max_retries=3, retry_delay=1):
+    """Get database connection with retry logic"""
+    dbconfig = {
+        "pool_name": "mypool",
+        "pool_size": 5,
+        "host": os.getenv('DB_HOST', 'localhost'),
+        "user": os.getenv('DB_USER', 'root'),
+        "password": os.getenv('DB_PASSWORD', 'projectjam@123'),
+        "database": os.getenv('DB_NAME', 'rural_job_portal'),
+        "port": int(os.getenv('DB_PORT', 3306)),
+        "connect_timeout": 10
+    }
+
+    for attempt in range(max_retries):
+        try:
+            if not hasattr(get_db_connection, "pool"):
+                get_db_connection.pool = mysql.connector.pooling.MySQLConnectionPool(**dbconfig)
+            return get_db_connection.pool.get_connection()
+        except mysql.connector.Error as err:
+            app.logger.error(f"Database connection attempt {attempt + 1} failed: {err}")
+            if attempt == max_retries - 1:
+                # On last attempt, raise the error
+                raise
+            time.sleep(retry_delay)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -651,6 +669,21 @@ def saved_jobs():
 
     return render_template('saved_jobs.html', saved_jobs=saved_jobs)
 
+@app.route('/health')
+def health_check():
+    try:
+        # Test database connection
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT 1')
+        cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return jsonify({"status": "healthy", "database": "connected"}), 200
+    except Exception as e:
+        app.logger.error(f"Health check failed: {str(e)}")
+        return jsonify({"status": "unhealthy", "database": "disconnected", "error": str(e)}), 500
+
 # Configure logging
 if not app.debug:
     if not os.path.exists('logs'):
@@ -670,17 +703,19 @@ def not_found_error(error):
 
 @app.errorhandler(500)
 def internal_error(error):
-    db = get_db_connection()
-    db.rollback()
-    db.close()
+    try:
+        db = get_db_connection()
+        db.rollback()
+        db.close()
+    except Exception as e:
+        app.logger.error(f"Error handling 500 error: {str(e)}")
+    
     app.logger.error('Server Error: %s', str(error))
     app.logger.error(traceback.format_exc())
     return render_template('errors/500.html'), 500
 
-port = int(os.environ.get('PORT', 5000))
-app.run(host='0.0.0.0', port=port)
-
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
     if not app.debug:
-        app.logger.info('Rural Jobs Portal is starting up...')
-    app.run(debug=False)
+        app.logger.info(f'Rural Jobs Portal is starting up on port {port}...')
+    app.run(host='0.0.0.0', port=port, debug=False)
