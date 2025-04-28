@@ -14,6 +14,8 @@ import traceback
 import time
 import socket
 from contextlib import contextmanager
+from flask_mysql_connector import MySQL
+
 
 # Load environment variables from .env file
 load_dotenv()
