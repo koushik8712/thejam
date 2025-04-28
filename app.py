@@ -11,7 +11,6 @@ from dotenv import load_dotenv  # Added for environment variables
 import logging
 from logging.handlers import RotatingFileHandler
 import traceback
-from mysql.connector import pooling
 import time
 import socket
 from contextlib import contextmanager
@@ -20,7 +19,7 @@ from contextlib import contextmanager
 load_dotenv()
 
 app = Flask(__name__)
-app.config['DEBUG'] = False
+app.config['DEBUG'] = True  # Set back to True for local development
 
 # Use environment variables for sensitive data
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
@@ -54,25 +53,16 @@ ensure_upload_dirs()
 def get_db_connection():
     conn = None
     try:
-        # Get database configuration from environment
-        db_config = {
-            "host": os.getenv('localhost'),
-            "user": os.getenv('root'),
-            "password": os.getenv('projectjam@123'),
-            "database": os.getenv('rural_job_portal'),
-            "port": int(os.getenv('DB_PORT', 3306)),
-            "ssl_mode": "REQUIRED" if os.getenv('FLASK_ENV') == 'production' else None,
-            "connect_timeout": 10
-        }
-        
-        # Remove None values
-        db_config = {k: v for k, v in db_config.items() if v is not None}
-        
-        conn = mysql.connector.connect(**db_config)
+        conn = mysql.connector.connect(
+            host=os.getenv('DB_HOST', 'localhost'),
+            user=os.getenv('DB_USER', 'root'),
+            password=os.getenv('DB_PASSWORD', 'projectjam@123'),
+            database=os.getenv('DB_NAME', 'rural_job_portal'),
+            port=int(os.getenv('DB_PORT', 3306))
+        )
         yield conn
     except mysql.connector.Error as e:
         app.logger.error(f"Database connection failed: {e}")
-        flash("Unable to connect to database. Please try again later.", "error")
         raise
     finally:
         if conn is not None and conn.is_connected():
@@ -501,6 +491,45 @@ def search_jobs():
         saved_jobs=saved_jobs  # Pass saved_jobs to the template
     )
 
+@app.route('/search_animals', methods=['POST'])
+def search_animals():
+    if not request.is_json:
+        return jsonify({'error': 'Invalid request'}), 400
+        
+    data = request.get_json()
+    search = data.get('search', '')
+    category = data.get('category', '')
+    sort = data.get('sort', 'latest')
+    
+    query = """
+        SELECT * FROM animals WHERE 1=1
+    """
+    params = []
+    
+    if search:
+        query += " AND (category LIKE %s OR breed LIKE %s OR description LIKE %s OR location LIKE %s)"
+        search_term = f"%{search}%"
+        params.extend([search_term] * 4)
+        
+    if category:
+        query += " AND category = %s"
+        params.append(category)
+        
+    if sort == 'price_low':
+        query += " ORDER BY cost ASC"
+    elif sort == 'price_high':
+        query += " ORDER BY cost DESC"
+    else:
+        query += " ORDER BY created_at DESC"
+        
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query, tuple(params))
+        animals = cursor.fetchall()
+        cursor.close()
+        
+    return jsonify({'animals': animals})
+
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -580,31 +609,6 @@ def reset_password(token):
     # GET request - show reset form        
     return render_template('reset_password.html', token=token)
 
-@app.route('/auction')
-def auction():
-    return render_template('auction.html')
-
-@app.route('/upload_animal', methods=['POST'])
-def upload_animal():
-    if 'user_id' not in session:
-        flash("Please log in to upload an animal.", "warning")
-        return redirect(url_for('home'))
-
-    animal_category = request.form.get('animal_category')
-    animal_cost = request.form.get('animal_cost')
-    animal_details = request.form.get('animal_details')  # New field
-    file = request.files.get('animal_photo')
-
-    if not all([animal_category, animal_cost, file]):
-        flash("All fields except additional details are required.", "danger")
-        return redirect(url_for('auction'))
-
-    if allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        flash(f"Animal uploaded successfully under {animal_category} category!", "success")
-    return redirect(url_for('auction'))
-
 @app.route('/market_prices')
 def market_prices():
     return "Market Prices - Coming Soon"
@@ -680,6 +684,19 @@ def health_check():
         app.logger.error(f"Health check failed: {str(e)}")
         return jsonify({"status": "unhealthy", "database": "disconnected", "error": str(e)}), 500
 
+@app.route('/drop_indexes')
+def drop_indexes():
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DROP INDEX idx_animal_search ON animals")
+            cursor.execute("DROP INDEX idx_animal_created ON animals")
+            conn.commit()
+            cursor.close()
+        return "Indexes dropped successfully"
+    except Exception as e:
+        return f"Error dropping indexes: {str(e)}"
+
 # Configure logging
 if not app.debug:
     if not os.path.exists('logs'):
@@ -711,7 +728,4 @@ def internal_error(error):
     return render_template('errors/500.html'), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    if not app.debug:
-        app.logger.info(f'Rural Jobs Portal is starting up on port {port}...')
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(debug=True)

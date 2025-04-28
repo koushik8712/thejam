@@ -1,9 +1,36 @@
-{% extends "base.html" %}
-
-{% block content %}
-    <div class="error-container">
-        <h1>{{ get_text('page_not_found') }}</h1>
-        <p>{{ get_text('page_not_found_message') }}</p>
-        <p><a href="{{ url_for('home') }}">{{ get_text('back_to_home') }}</a></p>
-    </div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 50px;
+            color: #bf591c;
+        }
+        p {
+            font-size: 20px;
+            color: #555;
+        }
+        a {
+            color: #bf591c;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>404</h1>
+    <p>Oops! The page you are looking for does not exist.</p>
+    <p><a href="{{ url_for('home') }}">Go back to the homepage</a></p>
+</body>
+</html>
