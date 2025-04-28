@@ -14,7 +14,7 @@ import traceback
 import time
 import socket
 from contextlib import contextmanager
-
+import sqlite3  # Add this import
 
 # Load environment variables from .env file
 load_dotenv()
@@ -54,19 +54,23 @@ ensure_upload_dirs()
 def get_db_connection():
     conn = None
     try:
-        conn = mysql.connector.connect(
-            host=os.getenv('DB_HOST', 'localhost'),
-            user=os.getenv('DB_USER', 'root'),
-            password=os.getenv('DB_PASSWORD', 'projectjam@123'),
-            database=os.getenv('DB_NAME', 'rural_job_portal'),
-            port=int(os.getenv('DB_PORT', 3306))
-        )
+        if os.getenv('DB_HOST'):  # Use MySQL if DB_HOST is set
+            conn = mysql.connector.connect(
+                host=os.getenv('DB_HOST'),
+                user=os.getenv('DB_USER'),
+                password=os.getenv('DB_PASSWORD'),
+                database=os.getenv('DB_NAME'),
+                port=int(os.getenv('DB_PORT', 3306))
+            )
+        else:  # Fallback to SQLite
+            conn = sqlite3.connect('rural_job_portal.db')
+            conn.row_factory = sqlite3.Row
         yield conn
-    except mysql.connector.Error as e:
+    except Exception as e:
         app.logger.error(f"Database connection failed: {e}")
         raise
     finally:
-        if conn is not None and conn.is_connected():
+        if conn:
             conn.close()
 
 def allowed_file(filename):
