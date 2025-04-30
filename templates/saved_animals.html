@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('saved_animals') }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ get_text('saved_animals') }}</h1>
+    {% if saved_animals %}
+        <div class="animals-wrapper">
+            {% for animal in saved_animals %}
+                <div class="animal-card">
+                    <img src="{{ url_for('static', filename='uploads/' + animal.photos.split(',')[0]) }}" 
+                         alt="{{ animal.category }}">
+                    <div class="animal-info">
+                        <h3>{{ animal.category }}{% if animal.breed %} - {{ animal.breed }}{% endif %}</h3>
+                        <p><strong>{{ get_text('price') }}:</strong> ₹{{ animal.cost }}</p>
+                        <p><strong>{{ get_text('location') }}:</strong> {{ animal.location }}</p>
+                        {% if animal.age %}
+                            <p><strong>{{ get_text('age') }}:</strong> {{ animal.age }} {{ get_text('years') }}</p>
+                        {% endif %}
+                        <p><strong>{{ get_text('weight') }}:</strong> {{ animal.weight }}kg</p>
+                        <p><strong>{{ get_text('saved_on') }}:</strong> 
+                           {{ animal.saved_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
+                        
+                        <div class="animal-actions">
+                            <a href="https://wa.me/+91{{ animal.contact_number }}?text={{ get_text('interested_in_animal') }} {{ animal.category }}" 
+                               target="_blank">{{ get_text('contact_on_whatsapp') }}</a>
+                            <a href="sms:+91{{ animal.contact_number }}?body={{ get_text('interested_in_animal') }} {{ animal.category }}">
+                                {{ get_text('contact_via_sms') }}</a>
+                            <button class="remove-animal-btn" data-animal-id="{{ animal.id }}" 
+                                    style="background: none; border: none; cursor: pointer;">
+                                <span class="remove-icon" style="color: red;">❌</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>{{ get_text('no_saved_animals') }}</p>
+    {% endif %}
+    
+    <a href="{{ url_for('dashboard') }}" class="back-link">
+        ← {{ get_text('back_to_dashboard') }}
+    </a>
+</div>
+
+<script>
+document.querySelectorAll('.remove-animal-btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const animalId = this.getAttribute('data-animal-id');
+        const animalCard = this.closest('.animal-card');
+
+        fetch(`/save_animal/${animalId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && !data.saved) {
+                animalCard.remove();
+            } else {
+                alert(data.message || 'An error occurred');
+            }
+        })
+        .catch(err => console.error('Error:', err));
+    });
+});
+</script>
+{% endblock %}

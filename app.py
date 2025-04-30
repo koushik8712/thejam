@@ -7,6 +7,7 @@ import bcrypt
 from werkzeug.utils import secure_filename
 import secrets
 from datetime import datetime, timedelta
+import pandas as pd
 from dotenv import load_dotenv  # Added for environment variables
 import logging
 from logging.handlers import RotatingFileHandler
@@ -492,44 +493,178 @@ def search_jobs():
         saved_jobs=saved_jobs  # Pass saved_jobs to the template
     )
 
-@app.route('/search_animals', methods=['POST'])
+@app.route('/post_animal', methods=['GET', 'POST'])
+def post_animal():
+    if 'user_id' not in session:
+        flash("You must be logged in to post an animal.", "warning")
+        return redirect(url_for('home'))
+
+    if request.method == 'POST':
+        category = request.form.get('animal_category')
+        custom_animal = request.form.get('custom_animal', '')
+        animal_name = custom_animal if category == 'custom' else category
+        age = request.form.get('animal_age')
+        age = int(age) if age and age.strip() else None
+        breed = request.form.get('animal_breed')
+        breed = breed if breed and breed.strip() else None
+        weight = request.form.get('animal_weight')
+        price = request.form.get('animal_cost')
+        description = request.form.get('animal_description')
+        location = request.form.get('animal_location')
+        contact_number = request.form.get('contact_number')
+        photos = request.files.getlist('animal_photos')
+
+        if not all([animal_name, weight, price, location, contact_number]):
+            flash("Please fill in all required fields!", "danger")
+            return redirect(url_for('post_animal'))
+
+        photo_filenames = []
+        for photo in photos:
+            if allowed_file(photo.filename):
+                filename = secure_filename(photo.filename)
+                photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                photo_filenames.append(filename)
+
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """INSERT INTO animals (category, age, breed, weight, cost, description, 
+                   location, contact_number, photos, posted_by)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                (animal_name, age, breed, weight, price, description, location, 
+                 contact_number, ','.join(photo_filenames), session.get('user_id'))
+            )
+            conn.commit()
+            cursor.close()
+
+        flash("Animal posted successfully!", "success")
+        return redirect(url_for('search_animals'))
+
+    return render_template('post_animal.html')
+
+@app.route('/search_animals', methods=['GET', 'POST'])
 def search_animals():
-    if not request.is_json:
-        return jsonify({'error': 'Invalid request'}), 400
-        
-    data = request.get_json()
-    search = data.get('search', '')
-    category = data.get('category', '')
-    sort = data.get('sort', 'latest')
-    
-    query = """
-        SELECT * FROM animals WHERE 1=1
-    """
-    params = []
-    
-    if search:
-        query += " AND (category LIKE %s OR breed LIKE %s OR description LIKE %s OR location LIKE %s)"
-        search_term = f"%{search}%"
-        params.extend([search_term] * 4)
-        
-    if category:
-        query += " AND category = %s"
-        params.append(category)
-        
-    if sort == 'price_low':
-        query += " ORDER BY cost ASC"
-    elif sort == 'price_high':
-        query += " ORDER BY cost DESC"
-    else:
-        query += " ORDER BY created_at DESC"
-        
+    filter_by = request.form.get('filter_by', '')
+    price_min = request.form.get('price_min', '')
+    price_max = request.form.get('price_max', '')
+    sort_price = request.form.get('sort_price', '')
+    category = request.form.get('category', '')
+    location = request.form.get('location', '')
+
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
+        query = """
+        SELECT animals.*, users.full_name, users.profile_picture 
+        FROM animals
+        JOIN users ON animals.posted_by = users.id
+        """
+        filters = []
+        params = []
+
+        if filter_by == 'price':
+            if price_min:
+                filters.append("animals.cost >= %s")
+                params.append(price_min)
+            if price_max:
+                filters.append("animals.cost <= %s")
+                params.append(price_max)
+        elif filter_by == 'category' and category:
+            filters.append("animals.category = %s")
+            params.append(category)
+        elif filter_by == 'location' and location:
+            filters.append("animals.location LIKE %s")
+            params.append(f"%{location}%")
+
+        if filters:
+            query += " WHERE " + " AND ".join(filters)
+
+        if sort_price == 'high_to_low':
+            query += " ORDER BY animals.cost DESC"
+        elif sort_price == 'low_to_high':
+            query += " ORDER BY animals.cost ASC"
+
         cursor.execute(query, tuple(params))
         animals = cursor.fetchall()
+
+        if 'user_id' in session:
+            cursor.execute("SELECT animal_id FROM animal_bookmarks WHERE user_id = %s", 
+                         (session['user_id'],))
+            saved_animals = [row['animal_id'] for row in cursor.fetchall()]
+        else:
+            saved_animals = []
+
         cursor.close()
-        
-    return jsonify({'animals': animals})
+
+    return render_template('search_animals.html', 
+                         animals=animals,
+                         filter_by=filter_by,
+                         price_min=price_min,
+                         price_max=price_max,
+                         sort_price=sort_price,
+                         category=category,
+                         location=location,
+                         saved_animals=saved_animals)
+
+@app.route('/save_animal/<int:animal_id>', methods=['POST'])
+def save_animal(animal_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Please log in first'})
+
+    user_id = session['user_id']
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM animals WHERE id = %s", (animal_id,))
+            if not cursor.fetchone():
+                return jsonify({'success': False, 'message': 'Animal not found'})
+            
+            cursor.execute(
+                "SELECT id FROM animal_bookmarks WHERE user_id = %s AND animal_id = %s",
+                (user_id, animal_id)
+            )
+            existing = cursor.fetchone()
+            
+            if existing:
+                cursor.execute(
+                    "DELETE FROM animal_bookmarks WHERE user_id = %s AND animal_id = %s",
+                    (user_id, animal_id)
+                )
+                saved = False
+            else:
+                cursor.execute(
+                    "INSERT INTO animal_bookmarks (user_id, animal_id) VALUES (%s, %s)",
+                    (user_id, animal_id)
+                )
+                saved = True
+                
+            conn.commit()
+            return jsonify({'success': True, 'saved': saved})
+            
+    except Exception as e:
+        app.logger.error(f"Error saving animal: {str(e)}")
+        return jsonify({'success': False, 'message': 'Database error occurred'})
+
+@app.route('/saved_animals')
+def saved_animals():
+    if 'user_id' not in session:
+        flash("Please log in first.", "warning")
+        return redirect(url_for('home'))
+
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT animals.*, animal_bookmarks.created_at AS saved_at, 
+                   users.full_name, users.profile_picture
+            FROM animal_bookmarks
+            JOIN animals ON animal_bookmarks.animal_id = animals.id
+            JOIN users ON animals.posted_by = users.id
+            WHERE animal_bookmarks.user_id = %s
+            ORDER BY animal_bookmarks.created_at DESC
+        """, (session['user_id'],))
+        saved_animals = cursor.fetchall()
+        cursor.close()
+
+    return render_template('saved_animals.html', saved_animals=saved_animals)
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
@@ -612,7 +747,44 @@ def reset_password(token):
 
 @app.route('/market_prices')
 def market_prices():
-    return "Market Prices - Coming Soon"
+    try:
+        # Fetch data from Agmarknet API
+        url = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
+        params = {
+            "api-key": os.getenv('AGMARKNET_API_KEY'),
+            "format": "json",
+            "limit": "1000",
+            "filters[state]": "Andhra Pradesh,Telangana",
+            "filters[commodity]": request.args.get('commodity', ''),
+            "filters[market]": request.args.get('market', '')
+        }
+        
+        response = requests.get(url, params=params, timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            market_data = data.get('records', [])
+            # Group by commodity
+            commodities = {}
+            for record in market_data:
+                commodity = record.get('commodity')
+                if commodity not in commodities:
+                    commodities[commodity] = []
+                commodities[commodity].append(record)
+        else:
+            app.logger.error(f"Agmarknet API returned status code: {response.status_code}")
+            market_data = []
+            commodities = {}
+            
+    except Exception as e:
+        app.logger.error(f"Error fetching market prices: {str(e)}")
+        market_data = []
+        commodities = {}
+
+    return render_template(
+        'market_prices.html',
+        market_data=market_data,
+        commodities=commodities
+    )
 
 @app.route('/logout')
 def logout():
@@ -623,29 +795,61 @@ def logout():
 @app.route('/save_job/<int:job_id>', methods=['POST'])
 def save_job(job_id):
     if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'User not logged in'}), 401
+        return jsonify({'success': False, 'message': 'Please log in first'})
 
+    user_id = session['user_id']
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Check if job exists first
+            cursor.execute("SELECT id FROM jobs WHERE id = %s", (job_id,))
+            if not cursor.fetchone():
+                return jsonify({'success': False, 'message': 'Job not found'})
+            
+            # Check if already bookmarked
+            cursor.execute(
+                "SELECT id FROM bookmarks WHERE user_id = %s AND job_id = %s", 
+                (user_id, job_id)
+            )
+            existing = cursor.fetchone()
+            
+            if existing:
+                # Remove bookmark
+                cursor.execute(
+                    "DELETE FROM bookmarks WHERE user_id = %s AND job_id = %s",
+                    (user_id, job_id)
+                )
+                saved = False
+            else:
+                # Add bookmark
+                cursor.execute(
+                    "INSERT INTO bookmarks (user_id, job_id) VALUES (%s, %s)",
+                    (user_id, job_id)
+                )
+                saved = True
+                
+            conn.commit()
+            return jsonify({'success': True, 'saved': saved})
+            
+    except Exception as e:
+        app.logger.error(f"Error saving job: {str(e)}")
+        return jsonify({'success': False, 'message': 'Database error occurred'})
+
+@app.route('/get_job_status/<int:job_id>')
+def get_job_status(job_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Please log in first', 'saved': False})
+        
     user_id = session['user_id']
     with get_db_connection() as conn:
         cursor = conn.cursor()
-
-        try:
-            # Toggle save state
-            cursor.execute("SELECT * FROM bookmarks WHERE user_id = %s AND job_id = %s", (user_id, job_id))
-            if cursor.fetchone():
-                cursor.execute("DELETE FROM bookmarks WHERE user_id = %s AND job_id = %s", (user_id, job_id))
-                saved = False
-            else:
-                cursor.execute("INSERT INTO bookmarks (user_id, job_id) VALUES (%s, %s)", (user_id, job_id))
-                saved = True
-
-            conn.commit()
-            return jsonify({'success': True, 'saved': saved})
-        except Exception as e:
-            conn.rollback()
-            return jsonify({'success': False, 'message': str(e)}), 500
-        finally:
-            cursor.close()
+        cursor.execute("SELECT * FROM bookmarks WHERE user_id = %s AND job_id = %s", 
+                      (user_id, job_id))
+        saved = cursor.fetchone() is not None
+        cursor.close()
+        
+    return jsonify({'success': True, 'saved': saved})
 
 @app.route('/saved_jobs', methods=['GET'])
 def saved_jobs():

@@ -83,12 +83,25 @@
 
         .ui-bookmark .bookmark {
             font-size: 20px;
-            color: #bf591c;
-            transition: color 0.3s;
+            color: #ccc;  /* Start with gray color */
+            transition: all 0.3s;
+            transform-origin: center;
         }
 
-        .ui-bookmark input:checked + .bookmark {
-            color: red;
+        .ui-bookmark .bookmark svg {
+            fill: #ccc; /* Default gray color */
+            transition: fill 0.3s ease, transform 0.3s ease;
+        }
+
+        .ui-bookmark input:checked + .bookmark svg {
+            fill: #ff6b6b; /* Pink color when checked */
+            animation: heart-burst 0.45s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+        }
+
+        @keyframes heart-burst {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
         }
 
         @media (max-width: 480px) {
@@ -271,9 +284,8 @@
                             <label class="ui-bookmark">
                                 <input type="checkbox" data-job-id="{{ job.id }}" {% if job.id in saved_jobs %}checked{% endif %}>
                                 <div class="bookmark">
-                                    <svg
+                                    <svg 
                                         viewBox="0 0 16 16"
-                                        style="margin-top:4px"
                                         class="bi bi-heart-fill"
                                         height="25"
                                         width="25"
@@ -281,7 +293,6 @@
                                     >
                                         <path
                                             d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
-                                            fill-rule="evenodd"
                                         ></path>
                                     </svg>
                                 </div>
@@ -298,40 +309,47 @@
     <script>
         document.querySelectorAll('.ui-bookmark input').forEach(input => {
             const jobId = input.getAttribute('data-job-id');
+            const label = input.closest('.ui-bookmark');
 
-            // Initialize the checkbox state based on the server data
-            fetch(`/get_job_status/${jobId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        input.checked = data.saved;
-                    } else {
-                        console.error(data.message || 'An error occurred while fetching job status');
-                    }
-                })
-                .catch(err => {
-                    console.error('Error:', err);
-                });
-
-            input.addEventListener('change', function (e) {
+            input.addEventListener('change', function(e) {
+                e.preventDefault();
+                
+                // Disable the input while processing
+                this.disabled = true;
+                
                 fetch(`/save_job/${jobId}`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         this.checked = data.saved;
+                        // Add animation class
+                        if (data.saved) {
+                            label.classList.add('liked');
+                        } else {
+                            label.classList.remove('liked');
+                        }
+                    } else if (data.message === 'Please log in first') {
+                        window.location.href = '/login';
                     } else {
                         alert(data.message || 'An error occurred');
-                        this.checked = !this.checked; // Revert the checkbox state
+                        this.checked = !this.checked;
                     }
                 })
                 .catch(err => {
                     console.error('Error:', err);
-                    this.checked = !this.checked; // Revert the checkbox state
+                    this.checked = !this.checked;
+                    alert('Failed to save job. Please try again.');
+                })
+                .finally(() => {
+                    // Re-enable the input
+                    this.disabled = false;
                 });
             });
         });

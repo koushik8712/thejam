@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('market_prices') }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ get_text('market_prices') }}</h1>
+    <p class="source-info">Data provided by Agmarknet</p>
+
+    <!-- Filters -->
+    <div class="filters">
+        <form method="GET" class="filter-form">
+            <select name="commodity" onchange="this.form.submit()">
+                <option value="">All Commodities</option>
+                {% for commodity in commodities.keys() %}
+                    <option value="{{ commodity }}" {% if request.args.get('commodity') == commodity %}selected{% endif %}>
+                        {{ commodity }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- Market Data -->
+    <div class="market-data">
+        {% if commodities %}
+            {% for commodity, prices in commodities.items() %}
+                <div class="commodity-section">
+                    <h2>{{ commodity }}</h2>
+                    <table class="price-table">
+                        <thead>
+                            <tr>
+                                <th>Market</th>
+                                <th>District</th>
+                                <th>Min Price (₹)</th>
+                                <th>Max Price (₹)</th>
+                                <th>Modal Price (₹)</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for price in prices %}
+                                <tr>
+                                    <td>{{ price.market }}</td>
+                                    <td>{{ price.district }}</td>
+                                    <td>{{ price.min_price }}</td>
+                                    <td>{{ price.max_price }}</td>
+                                    <td>{{ price.modal_price }}</td>
+                                    <td>{{ price.arrival_date }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-data">No market price data available at the moment.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.source-info {
+    color: #666;
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
+.filters {
+    margin-bottom: 30px;
+}
+
+.filter-form select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    min-width: 200px;
+}
+
+.commodity-section {
+    margin-bottom: 30px;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.price-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.price-table th, .price-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.price-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.price-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.no-data {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+@media (max-width: 768px) {
+    .price-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+</style>
+{% endblock %}

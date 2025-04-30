@@ -3,17 +3,20 @@
 {% block title %}{{ get_text('dashboard') }}{% endblock %}
 
 {% block content %}
-    <div class="dashboard-container">
-        <h1>🌾 {{ get_text('welcome') }}, {{ session['username'] }} 🌾</h1>
-        <p style="color: rgb(101, 62, 2); margin-bottom: 25px;">{{ get_text('dashboard_choose') }}</p>
-        
-        <div class="dashboard-buttons">
-            <a href="{{ url_for('search_jobs') }}">🔍 {{ get_text('search_jobs') }}</a>
-            <a href="{{ url_for('post_job') }}">📢 {{ get_text('post_job') }}</a>
-            <a href="{{ url_for('market_prices') }}">📊 {{ get_text('market_prices') }}</a>
-            <a href="{{ url_for('edit_profile') }}">📝 {{ get_text('edit_profile') }}</a>
-            <a href="{{ url_for('saved_jobs') }}">❤️ {{ get_text('liked_jobs') }}</a>
-            <a href="{{ url_for('logout') }}">🚪 {{ get_text('logout') }}</a>
-        </div>
+<div class="dashboard-container">
+    <h1>🌾 {{ get_text('welcome') }}, {{ session['username'] }} 🌾</h1>
+    <p style="color: rgb(101, 62, 2); margin-bottom: 25px;">{{ get_text('dashboard_choose') }}</p>
+    
+    <div class="dashboard-buttons">
+        <a href="{{ url_for('post_job') }}">📢 {{ get_text('post job') }}</a>
+        <a href="{{ url_for('post_animal') }}">🐎 {{ get_text('post animal') }}</a>
+        <a href="{{ url_for('market_prices') }}">📊 {{ get_text('market prices') }}</a>
+        <a href="{{ url_for('search_jobs') }}">🔍 {{ get_text('search_jobs') }}</a>
+        <a href="{{ url_for('search_animals') }}">🐄 {{ get_text('search animals') }}</a>
+        <a href="{{ url_for('saved_jobs') }}">❤️ {{ get_text('liked jobs') }}</a>
+        <a href="{{ url_for('saved_animals') }}">🦮 {{ get_text('saved animals') }}</a>
+        <a href="{{ url_for('edit_profile') }}">📝 {{ get_text('edit profile') }}</a>
+        <a href="{{ url_for('logout') }}">🚪 {{ get_text('logout') }}</a>
     </div>
-{% endblock %}
+</div>
+{% endblock %}+

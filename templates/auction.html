@@ -1,89 +1,112 @@
 {% extends "base.html" %}
-{% block title %}{{ get_text('animal auction') }}{% endblock %}
+{% block title %}{{ get_text('animal_auction') }}{% endblock %}
 
 {% block content %}
-<div class="container" style="width: 90%; max-width: 1200px; padding: 20px;">
-    <div class="search-filter-section" style="margin-bottom: 30px;">
-        <input type="text" id="searchAuction" placeholder="{{ get_text('search animals') }}" style="width: 200px;">
-        <select id="filterCategory">
-            <option value="">{{ get_text('all categories') }}</option>
-            <option value="cows">{{ get_text('cows') }}</option>
-            <option value="buffaloes">{{ get_text('buffaloes') }}</option>
-            <option value="goats">{{ get_text('goats') }}</option>
-            <option value="sheep">{{ get_text('sheep') }}</option>
-            <option value="poultry">{{ get_text('poultry') }}</option>
-            <option value="horses">{{ get_text('horses') }}</option>
-        </select>
-        <select id="sortBy">
-            <option value="latest">{{ get_text('latest first') }}</option>
-            <option value="price_low">{{ get_text('price: low to high') }}</option>
-            <option value="price_high">{{ get_text('price: high to low') }}</option>
-        </select>
-    </div>
-
-    <div class="post-animal-section">
-        <h2>{{ get_text('post your animal') }}</h2>
-        <form action="{{ url_for('upload_animal') }}" method="POST" enctype="multipart/form-data">
-            <label for="animal_category">{{ get_text('select animal') }}</label>
-            <select id="animal_category" name="animal_category" onchange="toggleCustomAnimalInput(this)" required>
-                <option value="">{{ get_text('choose animal category') }}</option>
+<div class="container" style="max-height: 90vh; overflow-y: auto;">
+    <div class="search-filter-section">
+        <h2>{{ get_text('search_animals') }}</h2>
+        <form method="POST" id="filterForm">
+            <label for="search">{{ get_text('search_by') }}</label>
+            <input type="text" id="search" name="search" placeholder="{{ get_text('search_by_title_description_location') }}">
+            
+            <label for="category">{{ get_text('filter_by') }}</label>
+            <select id="category" name="category">
+                <option value="">{{ get_text('all_categories') }}</option>
                 <option value="cows">{{ get_text('cows') }}</option>
                 <option value="buffaloes">{{ get_text('buffaloes') }}</option>
                 <option value="goats">{{ get_text('goats') }}</option>
                 <option value="sheep">{{ get_text('sheep') }}</option>
                 <option value="poultry">{{ get_text('poultry') }}</option>
                 <option value="horses">{{ get_text('horses') }}</option>
-                <option value="custom">{{ get_text('type manually') }}</option>
             </select>
 
-            <input type="text" id="custom_animal_input" name="custom_animal" placeholder="{{ get_text('type animal name') }}" style="display: none; margin-top: 10px;">
+            <label for="sort">{{ get_text('sort_by') }}</label>
+            <select id="sort" name="sort">
+                <option value="latest">{{ get_text('latest_first') }}</option>
+                <option value="price_low">{{ get_text('price_low_to_high') }}</option>
+                <option value="price_high">{{ get_text('price_high_to_low') }}</option>
+            </select>
 
-            <div class="animal-details">
-                <label for="animal_age">{{ get_text('animal age') }}</label>
-                <input type="number" id="animal_age" name="animal_age" placeholder="{{ get_text('enter age in years') }}" required>
+            <button type="submit">{{ get_text('apply_filters') }}</button>
+        </form>
+    </div>
 
-                <label for="animal_breed">{{ get_text('breed') }}</label>
-                <input type="text" id="animal_breed" name="animal_breed" placeholder="{{ get_text('enter breed') }}" required>
+    <div class="post-animal-section">
+        <h2>{{ get_text('post_your_animal') }}</h2>
+        <form action="{{ url_for('auction') }}" method="POST" enctype="multipart/form-data">
+            <label for="animal_category">{{ get_text('select_animal') }}</label>
+            <select id="animal_category" name="animal_category" onchange="toggleCustomAnimalInput(this)" required>
+                <option value="">{{ get_text('choose_animal_category') }}</option>
+                <option value="cows">{{ get_text('cows') }}</option>
+                <option value="buffaloes">{{ get_text('buffaloes') }}</option>
+                <option value="goats">{{ get_text('goats') }}</option>
+                <option value="sheep">{{ get_text('sheep') }}</option>
+                <option value="poultry">{{ get_text('poultry') }}</option>
+                <option value="horses">{{ get_text('horses') }}</option>
+                <option value="custom">{{ get_text('type_manually') }}</option>
+            </select>
+            <input type="text" id="custom_animal_input" name="custom_animal" placeholder="{{ get_text('type_animal_name') }}" style="display: none;">
 
-                <label for="animal_weight">{{ get_text('weight (kg)') }}</label>
-                <input type="number" id="animal_weight" name="animal_weight" placeholder="{{ get_text('enter weight') }}" required>
+            <label for="animal_age">{{ get_text('animal_age') }} ({{ get_text('optional') }})</label>
+            <input type="number" 
+                   id="animal_age" 
+                   name="animal_age" 
+                   min="0" 
+                   max="100"
+                   placeholder="{{ get_text('enter_age_if_known') }}">
 
-                <label for="animal_cost">{{ get_text('price (₹)') }}</label>
-                <input type="number" id="animal_cost" name="animal_cost" placeholder="{{ get_text('enter price') }}" required>
+            <label for="animal_breed">{{ get_text('breed') }} ({{ get_text('optional') }})</label>
+            <input type="text" 
+                   id="animal_breed" 
+                   name="animal_breed" 
+                   placeholder="{{ get_text('enter_breed_if_known') }}">
 
-                <label for="animal_description">{{ get_text('description') }}</label>
-                <textarea id="animal_description" name="animal_description" rows="4" placeholder="{{ get_text('describe your animal') }}"></textarea>
+            <label for="animal_weight">{{ get_text('weight_kg') }}</label>
+            <input type="number" id="animal_weight" name="animal_weight" required>
 
-                <label for="animal_location">{{ get_text('location') }}</label>
-                <input type="text" id="animal_location" name="animal_location" placeholder="{{ get_text('enter location') }}" required>
+            <label for="animal_cost">{{ get_text('price') }}</label>
+            <input type="number" id="animal_cost" name="animal_cost" required>
 
-                <label for="animal_photos">{{ get_text('upload photos') }}</label>
-                <input type="file" id="animal_photos" name="animal_photos[]" accept="image/*" multiple required>
-                <div id="preview" class="image-preview"></div>
+            <label for="animal_description">{{ get_text('description') }}</label>
+            <textarea id="animal_description" name="animal_description" rows="4"></textarea>
 
-                <label for="contact_number">{{ get_text('contact number') }}</label>
-                <input type="tel" id="contact_number" name="contact_number" pattern="[0-9]{10}" placeholder="{{ get_text('enter mobile number') }}" required>
+            <label for="animal_location">{{ get_text('location') }}</label>
+            <input type="text" id="animal_location" name="animal_location" required>
+
+            <label for="animal_photos">{{ get_text('upload_photos') }}</label>
+            <input type="file" id="animal_photos" name="animal_photos[]" accept="image/*" multiple required>
+
+            <label for="contact_number">{{ get_text('contact_number') }}*</label>
+            <div class="phone-input-container">
+                <span class="phone-prefix">+91</span>
+                <input type="tel" 
+                       id="contact_number" 
+                       name="contact_number" 
+                       pattern="[0-9]{10}" 
+                       maxlength="10" 
+                       minlength="10"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                       placeholder="Enter 10 digit number" 
+                       required>
             </div>
 
-            <button type="submit" class="submit-btn">{{ get_text('post animal') }}</button>
+            <button type="submit">{{ get_text('post_animal') }}</button>
         </form>
     </div>
 
     <div class="animal-listings">
-        <h2>{{ get_text('available animals') }}</h2>
+        <h2>{{ get_text('available_animals') }}</h2>
         <div class="listings-grid">
             {% for animal in animals %}
             <div class="animal-card">
-                <img src="{{ url_for('static', filename='uploads/' + animal.photo) }}" alt="{{ animal.category }}">
+                <img src="{{ url_for('static', filename='uploads/' + animal.photos.split(',')[0]) }}" alt="{{ animal.category }}">
                 <div class="animal-info">
                     <h3>{{ animal.category }} - {{ animal.breed }}</h3>
-                    <p class="price">₹{{ animal.cost }}</p>
-                    <p class="location"><i class="fas fa-map-marker-alt"></i> {{ animal.location }}</p>
-                    <p class="details">{{ get_text('age') }}: {{ animal.age }} {{ get_text('years') }} | {{ get_text('weight') }}: {{ animal.weight }}kg</p>
-                    <div class="contact-buttons">
-                        <a href="tel:{{ animal.contact_number }}" class="call-btn">{{ get_text('call seller') }}</a>
-                        <a href="https://wa.me/91{{ animal.contact_number }}" class="whatsapp-btn" target="_blank">WhatsApp</a>
-                    </div>
+                    <p>{{ get_text('price') }}: ₹{{ animal.cost }}</p>
+                    <p>{{ get_text('location') }}: {{ animal.location }}</p>
+                    <p>{{ get_text('age') }}: {{ animal.age }} {{ get_text('years') }}</p>
+                    <p>{{ get_text('weight') }}: {{ animal.weight }}kg</p>
+                    <a href="tel:{{ animal.contact_number }}">{{ get_text('call_seller') }}</a>
                 </div>
             </div>
             {% endfor %}
@@ -91,114 +114,33 @@
     </div>
 </div>
 
-<style>
-.search-filter-section {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.animal-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.2s;
-}
-
-.animal-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-.listings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.animal-info {
-    padding: 15px;
-}
-
-.image-preview {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin: 10px 0;
-}
-
-.image-preview img {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.contact-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.call-btn, .whatsapp-btn {
-    flex: 1;
-    padding: 8px;
-    text-align: center;
-    border-radius: 4px;
-    color: white;
-    text-decoration: none;
-}
-
-.call-btn {
-    background-color: #4CAF50;
-}
-
-.whatsapp-btn {
-    background-color: #25D366;
-}
-</style>
-
 <script>
 function toggleCustomAnimalInput(selectElement) {
     const customInput = document.getElementById('custom_animal_input');
-    if (selectElement.value === 'custom') {
-        customInput.style.display = 'block';
-        customInput.required = true;
-    } else {
-        customInput.style.display = 'none';
-        customInput.required = false;
-    }
-}
-
-document.getElementById('animal_photos').addEventListener('change', function(event) {
-    const preview = document.getElementById('preview');
-    preview.innerHTML = '';
-    
-    for(let file of event.target.files) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            preview.appendChild(img);
-        }
-        reader.readAsDataURL(file);
-    }
-});
-
-// Search and filter functionality
-document.getElementById('searchAuction').addEventListener('input', filterAnimals);
-document.getElementById('filterCategory').addEventListener('change', filterAnimals);
-document.getElementById('sortBy').addEventListener('change', filterAnimals);
-
-function filterAnimals() {
-    // Add your filter logic here
-    const searchTerm = document.getElementById('searchAuction').value.toLowerCase();
-    const category = document.getElementById('filterCategory').value;
-    const sortBy = document.getElementById('sortBy').value;
-    
-    // Update the listings based on filters
-    // This would typically be handled by an AJAX call to the server
+    customInput.style.display = selectElement.value === 'custom' ? 'block' : 'none';
 }
 </script>
+
+<style>
+    .phone-input-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .phone-prefix {
+        background-color: #f0f0f0;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-right: none;
+        border-radius: 5px 0 0 5px;
+        color: #666;
+        font-size: 16px;
+    }
+
+    #contact_number {
+        border-radius: 0 5px 5px 0;
+        margin-bottom: 0;
+    }
+</style>
 {% endblock %}
