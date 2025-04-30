@@ -1,2 +1,14 @@
 [phases.setup]
-aptPkgs = ['default-libmysqlclient-dev', 'pkg-config', 'python3-dev', 'build-essential']
+aptPkgs = [
+    "python3-dev",
+    "default-libmysqlclient-dev",
+    "pkg-config",
+    "build-essential"
+]
+
+[phases.build]
+cmds = [
+    "python -m venv --copies /opt/venv",
+    ". /opt/venv/bin/activate && pip install --upgrade pip",
+    ". /opt/venv/bin/activate && pip install -r requirements.txt"
+]
