@@ -21,7 +21,8 @@ from contextlib import contextmanager
 load_dotenv()
 
 app = Flask(__name__)
-app.config['DEBUG'] = True  # Set back to True for local development
+app.config['DEBUG'] = False  # Set to False for production
+app.config['PROPAGATE_EXCEPTIONS'] = True
 
 # Use environment variables for sensitive data
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
@@ -60,7 +61,8 @@ def get_db_connection():
             user=os.getenv('DB_USER', 'root'),
             password=os.getenv('DB_PASSWORD', 'projectjam@123'),
             database=os.getenv('DB_NAME', 'rural_job_portal'),
-            port=int(os.getenv('DB_PORT', 3306))
+            port=int(os.getenv('DB_PORT', 3306)),
+            ssl_verify_cert=True
         )
         yield conn
     except mysql.connector.Error as e:
