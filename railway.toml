@@ -1,12 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = """
-apt-get update && \
-apt-get install -y python3-dev build-essential && \
-pip install --upgrade pip && \
-pip install wheel && \
-pip install -r requirements.txt
-"""
+buildCommand = "pip install --only-binary :all: -r requirements.txt"
 
 [deploy]
 startCommand = "gunicorn app:app"
