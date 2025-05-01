@@ -9,11 +9,12 @@ healthcheckTimeout = 100
 
 [phases.setup]
 aptPkgs = [
+    "python3-distutils",
+    "python3-setuptools",
     "python3-dev",
     "default-libmysqlclient-dev",
     "pkg-config",
     "build-essential",
     "libpq-dev",
-    "python3-numpy",
-    "python3-distutils"  # Ensure distutils is installed
+    "python3-numpy"
 ]
