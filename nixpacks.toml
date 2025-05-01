@@ -5,12 +5,16 @@ aptPkgs = [
     "python3-dev",
     "default-libmysqlclient-dev",
     "pkg-config",
-    "build-essential"
+    "build-essential",
+    "python3-pip"
 ]
 
 [phases.build]
 cmds = [
-    "python -m venv --copies /opt/venv",
-    ". /opt/venv/bin/activate && pip install --upgrade pip setuptools",
-    ". /opt/venv/bin/activate && pip install -r requirements.txt"
+    "apt-get update",
+    "apt-get install -y python3-distutils",
+    "python -m venv --copies --without-pip /opt/venv",
+    ". /opt/venv/bin/activate && python -m ensurepip --upgrade",
+    ". /opt/venv/bin/activate && pip install --no-cache-dir --upgrade pip setuptools wheel",
+    ". /opt/venv/bin/activate && pip install --no-cache-dir -r requirements.txt"
 ]
