@@ -1,6 +1,12 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pip install --no-binary :all: -r requirements.txt"
+buildCommand = """
+apt-get update && \
+apt-get install -y python3-dev build-essential && \
+pip install --upgrade pip && \
+pip install wheel && \
+pip install -r requirements.txt
+"""
 
 [deploy]
 startCommand = "gunicorn app:app"
@@ -8,4 +14,11 @@ healthcheckPath = "/health"
 healthcheckTimeout = 100
 
 [phases.setup]
-aptPkgs = ["python3-dev", "default-libmysqlclient-dev", "pkg-config", "build-essential"]
+aptPkgs = [
+    "python3-dev",
+    "default-libmysqlclient-dev",
+    "pkg-config",
+    "build-essential",
+    "libpq-dev",
+    "python3-numpy"
+]
