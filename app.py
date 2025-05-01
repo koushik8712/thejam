@@ -993,15 +993,21 @@ def internal_error(error):
     app.logger.error(traceback.format_exc())
     return render_template('errors/500.html'), 500
 
-@app.before_first_request
-def init_app():
-    """Initialize app before first request to prevent worker timeout"""
-    app.logger.info("Initializing application...")
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT 1')  # Test DB connection
-        cursor.close()
-    app.logger.info("Application initialized successfully")
+# Remove @app.before_first_request decorator and replace with startup code
+def init_db_connection():
+    """Initialize database connection"""
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT 1')  # Test DB connection
+            cursor.close()
+            app.logger.info("Database connection successful")
+    except Exception as e:
+        app.logger.error(f"Database initialization failed: {e}")
+        raise
+
+# Initialize on startup
+init_db_connection()
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
