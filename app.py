@@ -17,18 +17,14 @@ import socket
 from contextlib import contextmanager
 
 
-// ...existing code...
 
-# Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
 app.config['DEBUG'] = False  # Set to False for production
 app.config['PROPAGATE_EXCEPTIONS'] = True
 
-// ...existing code...
 
-# Use environment variables for sensitive data
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 
 UPLOAD_FOLDER = 'static/uploads/'
@@ -157,7 +153,7 @@ def send_otp():
         flash('Please enter a valid 10-digit phone number', 'error')
         return redirect(url_for('login_with_otp'))
 
-    // ...existing code...
+    # ...existing code...
 
     # Generate 6-digit OTP
     otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
@@ -166,7 +162,7 @@ def send_otp():
     with get_db_connection() as conn:
         cursor = conn.cursor()
 
-        // ...existing code...
+        # ...existing code...
 
         # Store OTP in database
         cursor.execute(
@@ -176,7 +172,7 @@ def send_otp():
         conn.commit()
         cursor.close()
 
-    // ...existing code...
+    # ...existing code...
 
     # For testing, show OTP (in production, send via SMS)
     flash(f'Your OTP is: {otp}', 'info')
@@ -190,7 +186,7 @@ def verify_otp():
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
 
-        // ...existing code...
+        # ...existing code...
 
         # Verify OTP
         cursor.execute(
@@ -205,7 +201,7 @@ def verify_otp():
         verification = cursor.fetchone()
 
         if verification:
-            // ...existing code...
+            # ...existing code...
 
             # Mark OTP as used
             cursor.execute(
@@ -213,7 +209,7 @@ def verify_otp():
                 (verification['id'],)
             )
             
-            // ...existing code...
+            # ...existing code...
 
             # Get user details
             cursor.execute("SELECT * FROM users WHERE phone_number = %s", (phone_number,))
@@ -245,7 +241,7 @@ def dashboard():
 def register():
     if request.method == 'POST':
         try:
-            // ...existing code...
+            # ...existing code...
 
             # Get form data
             form_data = {
@@ -257,7 +253,7 @@ def register():
                 'location': request.form.get('location', '')
             }
 
-            // ...existing code...
+            # ...existing code...
 
             # Validate form data
             if not all([form_data['full_name'], form_data['phone_number'], form_data['username'],
@@ -269,14 +265,14 @@ def register():
                 flash("Phone number should be exactly 10 digits!", "danger")
                 return render_template('register.html', avatars=AVATARS, form_data=form_data)
 
-            // ...existing code...
+            # ...existing code...
 
             # Database connection with context management
             with get_db_connection() as conn:
                 cursor = conn.cursor(dictionary=True)
 
                 try:
-                    // ...existing code...
+                    # ...existing code...
 
                     # Check duplicate phone
                     cursor.execute("SELECT * FROM users WHERE phone_number = %s", (form_data['phone_number'],))
@@ -284,7 +280,7 @@ def register():
                         flash("This phone number is already registered!", "danger")
                         return render_template('register.html', avatars=AVATARS, form_data=form_data)
 
-                    // ...existing code...
+                    # ...existing code...
 
                     # Check duplicate username
                     cursor.execute("SELECT * FROM users WHERE username = %s", (form_data['username'],))
@@ -296,13 +292,13 @@ def register():
                         flash("Passwords do not match!", "danger")
                         return render_template('register.html', avatars=AVATARS, form_data=form_data)
 
-                    // ...existing code...
+                    # ...existing code...
 
                     # Hash password
                     hashed_password = bcrypt.hashpw(request.form.get('password').encode('utf-8'), 
                                                  bcrypt.gensalt()).decode('utf-8')
 
-                    // ...existing code...
+                    # ...existing code...
 
                     # Handle profile picture
                     profile_picture = "default_profile.png"
@@ -324,7 +320,7 @@ def register():
                     elif avatar_choice in AVATARS:
                         profile_picture = avatar_choice
 
-                    // ...existing code...
+                    # ...existing code...
 
                     # Insert user
                     cursor.execute(
@@ -711,13 +707,13 @@ def forgot_password():
             user = cursor.fetchone()
             
             if user:
-                // ...existing code...
+                # ...existing code...
 
                 # Generate reset token
                 reset_token = secrets.token_urlsafe(32)
                 expires_at = datetime.now() + timedelta(hours=1)
                 
-                // ...existing code...
+                # ...existing code...
 
                 # Store reset token in database
                 cursor.execute(
@@ -726,7 +722,7 @@ def forgot_password():
                 )
                 conn.commit()
                 
-                // ...existing code...
+                # ...existing code...
 
                 flash(f"Reset token: {reset_token}", "info")
                 return redirect(url_for('reset_password', token=reset_token))
@@ -753,7 +749,7 @@ def reset_password(token):
         with get_db_connection() as conn:
             cursor = conn.cursor(dictionary=True)
             
-            // ...existing code...
+            # ...existing code...
 
             # Get reset record and check if valid
             cursor.execute(
@@ -766,7 +762,7 @@ def reset_password(token):
             reset = cursor.fetchone()
             
             if reset:
-                // ...existing code...
+                # ...existing code...
 
                 # Update password
                 hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
@@ -774,7 +770,7 @@ def reset_password(token):
                     "UPDATE users SET password = %s WHERE id = %s",
                     (hashed_password, reset['user_id'])
                 )
-                // ...existing code...
+                # ...existing code...
 
                 # Mark token as used
                 cursor.execute("UPDATE password_resets SET used = TRUE WHERE id = %s", (reset['id'],))
@@ -787,15 +783,15 @@ def reset_password(token):
                 cursor.close()
                 return redirect(url_for('forgot_password'))
 
-    // ...existing code...
+    # ...existing code...
 
-    // GET request - show reset form        
+    # GET request - show reset form        
     return render_template('reset_password.html', token=token)
 
 @app.route('/market_prices')
 def market_prices():
     try:
-        // ...existing code...
+        # ...existing code...
 
         # Fetch data from Agmarknet API
         url = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
@@ -812,7 +808,7 @@ def market_prices():
         if response.status_code == 200:
             data = response.json()
             market_data = data.get('records', [])
-            // ...existing code...
+            # ...existing code...
 
             # Group by commodity
             commodities = {}
@@ -853,14 +849,14 @@ def save_job(job_id):
         with get_db_connection() as conn:
             cursor = conn.cursor()
             
-            // ...existing code...
+            # ...existing code...
 
             # Check if job exists first
             cursor.execute("SELECT id FROM jobs WHERE id = %s", (job_id,))
             if not cursor.fetchone():
                 return jsonify({'success': False, 'message': 'Job not found'})
             
-            // ...existing code...
+            # ...existing code...
 
             # Check if already bookmarked
             cursor.execute(
@@ -870,7 +866,7 @@ def save_job(job_id):
             existing = cursor.fetchone()
             
             if existing:
-                // ...existing code...
+                # ...existing code...
 
                 # Remove bookmark
                 cursor.execute(
@@ -879,7 +875,7 @@ def save_job(job_id):
                 )
                 saved = False
             else:
-                // ...existing code...
+                # ...existing code...
 
                 # Add bookmark
                 cursor.execute(
@@ -920,7 +916,7 @@ def saved_jobs():
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
 
-        // ...existing code...
+        # ...existing code...
 
         # Fetch saved jobs
         cursor.execute("""
@@ -939,7 +935,7 @@ def saved_jobs():
 @app.route('/health')
 def health_check():
     try:
-        // ...existing code...
+        # ...existing code...
 
         # Test database connection
         with get_db_connection() as conn:
@@ -965,7 +961,7 @@ def drop_indexes():
     except Exception as e:
         return f"Error dropping indexes: {str(e)}"
 
-// ...existing code...
+# ...existing code...
 
 # Configure logging
 if not app.debug:
