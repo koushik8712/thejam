@@ -15,5 +15,5 @@ aptPkgs = [
     "build-essential",
     "libpq-dev",
     "python3-numpy",
-    "python3-distutils"  # Added to fix the missing distutils error
+    "python3-distutils"  # Ensure distutils is installed
 ]
