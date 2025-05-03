@@ -56,25 +56,37 @@ ensure_upload_dirs()
 def get_db_connection():
     conn = None
     try:
-        # Get database configuration with proper defaults
+        # Get database configuration with proper defaults and explicit password
         db_config = {
-            'host': os.getenv('DB_HOST', 'crossover.proxy.rlwy.net'),  # Use public hostname
+            'host': os.getenv('DB_HOST', 'mysql.railway.internal'),
             'user': os.getenv('DB_USER', 'root'),
-            'password': os.getenv('DB_PASSWORD'),
+            'password': os.getenv('DB_PASSWORD','payBGkxifWTJqncDMjpiYCjKVUzuOxwD'),  # This is required
             'database': os.getenv('DB_NAME', 'railway'),
-            'port': int(os.getenv('DB_PORT', '57945')),  # Use public port
+            'port': int(os.getenv('DB_PORT', '3306')),
             'auth_plugin': 'mysql_native_password',
-            'connect_timeout': 30
+            'connect_timeout': 30,
+            'use_pure': True,
+            'allow_local_infile': True,
+            'raise_on_warnings': True
         }
         
-        app.logger.info(f"Attempting database connection with: host={db_config['host']}, user={db_config['user']}, port={db_config['port']}")
+        # Log connection attempt without exposing password
+        app.logger.info(f"Attempting database connection to {db_config['host']}:{db_config['port']} as {db_config['user']}")
+        
+        if not db_config['password']:
+            raise ValueError("Database password not set in environment variables")
+            
         conn = mysql.connector.connect(**db_config)
+        conn.ping(reconnect=True, attempts=3, delay=5)
         yield conn
         
     except mysql.connector.Error as e:
         app.logger.error(f"Database connection failed: {str(e)}")
         if conn and conn.is_connected():
             conn.rollback()
+        raise
+    except ValueError as e:
+        app.logger.error(f"Configuration error: {str(e)}")
         raise
     finally:
         if conn and conn.is_connected():
