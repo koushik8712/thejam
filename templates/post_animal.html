@@ -3,71 +3,401 @@
 {% block title %}{{ get_text('post_animal') }}{% endblock %}
 
 {% block content %}
-<div class="post-job-container">
-    <h2>{{ get_text('post_animal') }}</h2>
-    <form action="{{ url_for('post_animal') }}" method="POST" enctype="multipart/form-data">
-        <label for="animal_category">{{ get_text('select_animal') }}</label>
-        <select id="animal_category" name="animal_category" onchange="toggleCustomAnimalInput(this)" required>
-            <option value="">{{ get_text('choose animal category') }}</option>
-            <option value="cows">{{ get_text('cows') }}</option>
-            <option value="buffaloes">{{ get_text('buffaloes') }}</option>
-            <option value="goats">{{ get_text('goats') }}</option>
-            <option value="sheep">{{ get_text('sheep') }}</option>
-            <option value="poultry">{{ get_text('poultry') }}</option>
-            <option value="horses">{{ get_text('horses') }}</option>
-            <option value="custom">{{ get_text('other') }}</option>
-        </select>
+<div class="container">
+    <nav>
+        <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
+        <a href="{{ url_for('search_animals') }}">{{ get_text('search animals') }}</a> |
+        <a href="{{ url_for('saved_animals') }}">{{ get_text('saved animals') }}</a>       |
+        
+    </nav>
 
-        <input type="text" id="custom_animal_input" name="custom_animal" 
-               style="display: none;" placeholder="{{ get_text('enter animal type') }}">
+    <div class="post-form-container">
+        <h2>{{ get_text('post_animal') }}</h2>
+        <form action="{{ url_for('post_animal') }}" method="POST" enctype="multipart/form-data" id="animalForm">
+            <div class="form-group">
+                <label for="animal_category">{{ get_text('select_animal') }}*</label>
+                <select id="animal_category" name="animal_category" required onchange="toggleOtherAnimalField()">
+                    <option value="">{{ get_text('choose_animal_category') }}</option>
+                    <option value="cows">{{ get_text('cows') }}</option>
+                    <option value="buffaloes">{{ get_text('buffaloes') }}</option>
+                    <option value="goats">{{ get_text('goats') }}</option>
+                    <option value="sheep">{{ get_text('sheep') }}</option>
+                    <option value="poultry">{{ get_text('poultry') }}</option>
+                    <option value="horses">{{ get_text('horses') }}</option>
+                    <option value="other">{{ get_text('other') }}</option>
+                </select>
+            </div>
 
-        <label for="animal_age">{{ get_text('age') }} ({{ get_text('optional') }})</label>
-        <input type="number" id="animal_age" name="animal_age" min="0" max="100">
+            <div class="form-group" id="other-animal-group" style="display: none;">
+                <label for="other_animal">{{ get_text('specify_animal') }}*</label>
+                <input type="text" id="other_animal" name="other_animal" placeholder="{{ get_text('enter_animal_name') }}">
+            </div>
 
-        <label for="animal_breed">{{ get_text('breed') }} ({{ get_text('optional') }})</label>
-        <input type="text" id="animal_breed" name="animal_breed">
+            <div class="form-group image-upload-section">
+                <label>{{ get_text('upload_photos') }}* ({{ get_text('max_4_photos') }})</label>
+                <div class="image-preview-container" id="preview-container">
+                    <div class="upload-box" onclick="document.getElementById('photo-input').click()">
+                        <span>+</span>
+                    </div>
+                    <input type="file" id="photo-input" name="animal_photos" accept="image/*" multiple 
+                           style="display: none" onchange="handleImageUpload(event)">
+                </div>
+            </div>
 
-        <label for="animal_weight">{{ get_text('weight') }} (kg)*</label>
-        <input type="number" id="animal_weight" name="animal_weight" required>
+            <div class="form-group">
+                <label for="animal_age">{{ get_text('age') }} ({{ get_text('optional') }})</label>
+                <input type="number" id="animal_age" name="animal_age" min="0">
+            </div>
 
-        <label for="animal_cost">{{ get_text('price') }}*</label>
-        <input type="number" id="animal_cost" name="animal_cost" required>
+            <div class="form-group">
+                <label for="animal_breed">{{ get_text('breed') }} ({{ get_text('optional') }})</label>
+                <input type="text" id="animal_breed" name="animal_breed">
+            </div>
 
-        <label for="animal_description">{{ get_text('description') }}</label>
-        <textarea id="animal_description" name="animal_description" rows="4"></textarea>
+            <div class="form-group">
+                <label for="animal_weight">{{ get_text('weight') }}* (kg)</label>
+                <input type="number" id="animal_weight" name="animal_weight" required min="0">
+            </div>
 
-        <label for="animal_location">{{ get_text('location') }}*</label>
-        <input type="text" id="animal_location" name="animal_location" required>
+            <div class="form-group">
+                <label for="animal_cost">{{ get_text('price') }}*</label>
+                <input type="number" id="animal_cost" name="animal_cost" required min="0">
+            </div>
 
-        <label for="animal_photos">{{ get_text('photos') }}*</label>
-        <input type="file" id="animal_photos" name="animal_photos" 
-               multiple accept="image/*" required>
+            <div class="form-group">
+                <label for="animal_location">{{ get_text('location') }}*</label>
+                <input type="text" id="animal_location" name="animal_location" required>
+            </div>
 
-        <label for="contact_number">{{ get_text('contact number') }}*</label>
-        <div class="phone-input-container">
-            <span class="phone-prefix">+91</span>
-            <input type="tel" id="contact_number" name="contact_number"
-                   pattern="[0-9]{10}" maxlength="10" minlength="10"
-                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                   placeholder="{{ get_text('enter_phone') }}" required>
-        </div>
+            <div class="form-group">
+                <label for="contact_number">{{ get_text('contact_number') }}*</label>
+                <input type="tel" id="contact_number" name="contact_number" 
+                       pattern="[0-9]{10}" maxlength="10" required 
+                       placeholder="{{ get_text('phone_placeholder') }}">
+            </div>
 
-        <button type="submit">{{ get_text('submit') }}</button>
-    </form>
-
-    <a href="{{ url_for('dashboard') }}" class="back-link">
-        ← {{ get_text('back_to_dashboard') }}
-    </a>
+            <button type="submit">{{ get_text('submit') }}</button>
+        </form>
+    </div>
 </div>
 
+<!-- Image Preview Modal -->
+<div id="preview-modal" class="modal">
+    <span class="close">&times;</span>
+    <div class="modal-content">
+        <img id="modal-img">
+        <button class="prev">&#10094;</button>
+        <button class="next">&#10095;</button>
+    </div>
+</div>
+
+<style>
+    body {
+        padding: 0;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 15px;
+        box-sizing: border-box;
+        height: calc(100vh - 40px);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        background-color: #f5e8be; /* Match post_job container color */
+    }
+
+    .post-form-container {
+        background-color: #f5e8be; /* Match post_job form color */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .image-upload-section {
+        margin: 20px 0;
+    }
+
+    .image-preview-container {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        min-height: 120px;
+        border: 1px dashed #ddd;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .upload-box {
+        width: 100px;
+        height: 100px;
+        border: 2px dashed #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .upload-box:hover {
+        background: #f5f5f5;
+        border-color: #bf591c;
+    }
+
+    .preview-container {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .preview-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+        transition: transform 0.3s ease;
+    }
+
+    .preview-image:hover {
+        transform: scale(1.05);
+    }
+
+    .preview-wrapper {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 5px;
+    }
+
+    .remove-image {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(255,0,0,0.8);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .remove-image:hover {
+        background: red;
+        transform: scale(1.1);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.9);
+    }
+
+    .modal-content {
+        position: relative;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .modal-content img {
+        max-width: 90%;
+        max-height: 90vh;
+        object-fit: contain;
+    }
+
+    .close {
+        position: absolute;
+        right: 25px;
+        top: 10px;
+        color: white;
+        font-size: 35px;
+        cursor: pointer;
+        z-index: 1001;
+    }
+
+    .prev, .next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255,255,255,0.3);
+        color: white;
+        padding: 16px;
+        border: none;
+        cursor: pointer;
+        border-radius: 50%;
+    }
+
+    .prev { left: 20px; }
+    .next { right: 20px; }
+
+    @media (max-width: 480px) {
+        .container {
+            padding: 10px;
+        }
+
+        .image-preview-container {
+            justify-content: center;
+        }
+    }
+
+    input[type="text"], input[type="tel"], input[type="number"], select, textarea {
+        border: none;
+        outline: none;
+        border-radius: 15px;
+        padding: 1em;
+        background-color: #f5f5f5; /* Light gray background for a clean look */
+        box-shadow: inset 2px 5px 10px rgba(0, 0, 0, 0.1); /* Subtle inset shadow */
+        transition: 300ms ease-in-out;
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 1em;
+        color: rgb(37, 41, 40); /* Dark gray text */
+        margin-bottom: 15px; /* Add spacing between fields */
+        font-family: 'Alata', sans-serif; /* Match the font with the rest of the page */
+    }
+
+    input:focus, textarea:focus, select:focus {
+        background-color: white;
+        transform: scale(1.02); /* Slight zoom effect on focus */
+        box-shadow: 0 0 10px rgba(191, 89, 30, 0.5); /* Glow effect */
+        outline: none; /* Remove default outline */
+    }
+</style>
+
 <script>
-function toggleCustomAnimalInput(selectElement) {
-    const customInput = document.getElementById('custom_animal_input');
-    customInput.style.display = selectElement.value === 'custom' ? 'block' : 'none';
-    if (selectElement.value === 'custom') {
-        customInput.setAttribute('required', '');
+let uploadedImages = [];
+let currentImageIndex = 0;
+
+function handleImageUpload(event) {
+    const files = Array.from(event.target.files);
+    const previewContainer = document.getElementById('preview-container');
+
+    // Clear existing previews
+    previewContainer.querySelectorAll('.preview-wrapper').forEach(wrapper => wrapper.remove());
+
+    files.forEach(file => {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+
+                // Create preview wrapper
+                const wrapper = document.createElement('div');
+                wrapper.className = 'preview-wrapper';
+
+                // Create image element
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.className = 'preview-image';
+
+                // Add remove button
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'remove-image';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = () => {
+                    wrapper.remove();
+                };
+
+                // Append elements
+                wrapper.appendChild(img);
+                wrapper.appendChild(removeBtn);
+                previewContainer.appendChild(wrapper);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+function addImagePreview(src, file) {
+    const container = document.getElementById('preview-container');
+    const wrapper = document.createElement('div');
+    wrapper.className = 'preview-wrapper';
+
+    const img = document.createElement('img');
+    img.src = src;
+    img.className = 'preview-image';
+    img.onclick = () => openModal(src);
+    img.title = file.name;
+
+    const removeBtn = document.createElement('div');
+    removeBtn.className = 'remove-image';
+    removeBtn.innerHTML = '×';
+    removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        wrapper.remove();
+        uploadedImages = uploadedImages.filter(img => img.preview !== src);
+        updateUploadBoxVisibility();
+    };
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(removeBtn);
+    container.appendChild(wrapper);
+
+    // Add loading animation
+    img.style.opacity = '0';
+    setTimeout(() => {
+        img.style.transition = 'opacity 0.3s ease';
+        img.style.opacity = '1';
+    }, 50);
+}
+
+function updateUploadBoxVisibility() {
+    const uploadBox = document.querySelector('.upload-box');
+    uploadBox.style.display = uploadedImages.length >= 4 ? 'none' : 'flex';
+}
+
+function openModal(src) {
+    const modal = document.getElementById('preview-modal');
+    const modalImg = document.getElementById('modal-img');
+    modal.style.display = "block";
+    modalImg.src = src;
+    currentImageIndex = uploadedImages.findIndex(img => img.preview === src);
+}
+
+document.querySelector('.close').onclick = () => {
+    document.getElementById('preview-modal').style.display = "none";
+}
+
+document.querySelector('.prev').onclick = () => {
+    currentImageIndex = (currentImageIndex - 1 + uploadedImages.length) % uploadedImages.length;
+    document.getElementById('modal-img').src = uploadedImages[currentImageIndex].preview;
+}
+
+document.querySelector('.next').onclick = () => {
+    currentImageIndex = (currentImageIndex + 1) % uploadedImages.length;
+    document.getElementById('modal-img').src = uploadedImages[currentImageIndex].preview;
+}
+
+function toggleOtherAnimalField() {
+    const animalCategory = document.getElementById('animal_category').value;
+    const otherAnimalGroup = document.getElementById('other-animal-group');
+    if (animalCategory === 'other') {
+        otherAnimalGroup.style.display = 'block';
     } else {
-        customInput.removeAttribute('required');
+        otherAnimalGroup.style.display = 'none';
+        document.getElementById('other_animal').value = ''; // Clear the input field
     }
 }
 </script>

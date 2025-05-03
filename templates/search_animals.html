@@ -4,16 +4,19 @@
 
 {% block content %}
 <div class="container">
-    <a href="{{ url_for('dashboard') }}" class="reset-button" style="float: right; margin-bottom: 10px;">
-        ← {{ get_text('back_to_dashboard') }}
-    </a>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
+        <a href="{{ url_for('post_animal') }}">{{ get_text('post animal') }}</a> |
+        <a href="{{ url_for('saved_animals') }}">{{ get_text('saved animals') }}</a>       |
+        
+    </nav>
 
     <div class="filter-container">
         <h2>{{ get_text('search_animals') }}</h2>
         <form method="POST" id="filterForm">
-            <label for="filter_by">{{ get_text('filter by') }}</label>
+            <label for="filter_by">{{ get_text('filter_by') }}</label>
             <select name="filter_by" id="filter_by" onchange="toggleFilterInputs()">
-                <option value="">{{ get_text('select filter') }}</option>
+                <option value="">{{ get_text('select_filter') }}</option>
                 <option value="price" {% if filter_by == 'price' %}selected{% endif %}>
                     {{ get_text('price') }}
                 </option>
@@ -26,24 +29,24 @@
             </select>
 
             <div id="priceFilter" style="display: {% if filter_by == 'price' %}block{% else %}none{% endif %};">
-                <label for="price_min">{{ get_text('min price') }}</label>
+                <label for="price_min">{{ get_text('min_price') }}</label>
                 <input type="number" name="price_min" id="price_min" value="{{ price_min }}">
-                <label for="price_max">{{ get_text('max price') }}</label>
+                <label for="price_max">{{ get_text('max_price') }}</label>
                 <input type="number" name="price_max" id="price_max" value="{{ price_max }}">
                 <select name="sort_price" id="sort_price">
-                    <option value="">{{ get_text('select sort') }}</option>
+                    <option value="">{{ get_text('select_sort') }}</option>
                     <option value="high_to_low" {% if sort_price == 'high_to_low' %}selected{% endif %}>
-                        {{ get_text('high to low price') }}
+                        {{ get_text('high_to_low_price') }}
                     </option>
                     <option value="low_to_high" {% if sort_price == 'low_to_high' %}selected{% endif %}>
-                        {{ get_text('low to high price') }}
+                        {{ get_text('low_to_high_price') }}
                     </option>
                 </select>
             </div>
 
             <div id="categoryFilter" style="display: {% if filter_by == 'category' %}block{% else %}none{% endif %};">
                 <select name="category" id="category">
-                    <option value="">{{ get_text('select category') }}</option>
+                    <option value="">{{ get_text('select_category') }}</option>
                     <option value="cows" {% if category == 'cows' %}selected{% endif %}>
                         {{ get_text('cows') }}
                     </option>
@@ -74,9 +77,16 @@
     <div class="animals-wrapper">
         {% for animal in animals %}
             <div class="animal-card">
-                <img src="{{ url_for('static', filename='uploads/' + animal.photos.split(',')[0]) }}" 
-                     alt="{{ animal.category }}">
-                <div class="animal-info">
+                <div class="animal-card-content">
+                    <div class="animal-image">
+                        <img src="{{ url_for('static', filename='uploads/' + animal.photos.split(',')[0]) }}" 
+                             alt="{{ animal.category }}"
+                             onclick="openGallery('{{ animal.photos | escapejs }}')">
+                        {% if animal.photos.split(',')|length > 1 %}
+                            <span class="more-photos">+{{ animal.photos.split(',')|length - 1 }}</span>
+                        {% endif %}
+                        <p class="tap-note">{{ get_text('tap_photo_to_view') }}</p>
+                    </div>
                     <h3>{{ animal.category }}{% if animal.breed %} - {{ animal.breed }}{% endif %}</h3>
                     <p><strong>{{ get_text('price') }}:</strong> ₹{{ animal.cost }}</p>
                     <p><strong>{{ get_text('location') }}:</strong> {{ animal.location }}</p>
@@ -84,27 +94,334 @@
                         <p><strong>{{ get_text('age') }}:</strong> {{ animal.age }} {{ get_text('years') }}</p>
                     {% endif %}
                     <p><strong>{{ get_text('weight') }}:</strong> {{ animal.weight }}kg</p>
-                    
-                    <div class="animal-actions">
-                        <a href="https://wa.me/+91{{ animal.contact_number }}?text={{ get_text('interested_in_animal') }} {{ animal.category }}" 
-                           target="_blank">{{ get_text('contact_on_whatsapp') }}</a>
-                        <a href="sms:+91{{ animal.contact_number }}?body={{ get_text('interested_in_animal') }} {{ animal.category }}">
-                            {{ get_text('contact_via_sms') }}</a>
-                        <label class="ui-bookmark">
-                            <input type="checkbox" data-animal-id="{{ animal.id }}" 
-                                   {% if animal.id in saved_animals %}checked{% endif %}>
-                            <div class="bookmark">
-                                <svg viewBox="0 0 16 16" class="bi bi-heart-fill" height="25" width="25">
-                                    <path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
-                                </svg>
-                            </div>
-                        </label>
-                    </div>
+                    <p><strong>{{ get_text('posted_by') }}:</strong> 
+                        <img src="{{ url_for('static', filename='avatars/' + animal.profile_picture) }}" 
+                             alt="Profile Picture" 
+                             style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle;">
+                        {{ animal.full_name }}
+                    </p>
+                </div>
+                
+                <div class="job-card-actions">
+                    <a href="https://wa.me/+91{{ animal.contact_number }}?text={{ get_text('interested_in_animal') }} {{ animal.category }}" 
+                       target="_blank">{{ get_text('contact_on_whatsapp') }}</a>
+                    <a href="sms:+91{{ animal.contact_number }}?body={{ get_text('interested_in_animal') }} {{ animal.category }}">
+                        {{ get_text('contact_via_sms') }}</a>
+                    <label class="ui-bookmark">
+                        <input type="checkbox" data-animal-id="{{ animal.id }}" 
+                               {% if animal.id in saved_animals %}checked{% endif %}>
+                        <div class="bookmark">
+                            <svg viewBox="0 0 16 16" class="bi bi-heart-fill" height="25" width="25">
+                                <path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                            </svg>
+                        </div>
+                    </label>
                 </div>
             </div>
         {% endfor %}
     </div>
 </div>
+
+<!-- Add modal gallery -->
+<div id="gallery-modal" class="modal">
+    <span id="close-modal" class="close-modal">&times;</span>
+    <button id="prev-btn" class="nav-btn prev-btn">&#10094;</button>
+    <div class="modal-content">
+        <img id="gallery-image" src="">
+    </div>
+    <button id="next-btn" class="nav-btn next-btn">&#10095;</button>
+    <div id="image-counter" class="image-counter"></div>
+</div>
+
+<style>
+    body {
+        padding: 0;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 15px;
+        box-sizing: border-box;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .filter-container {
+        flex-shrink: 0;
+    }
+
+    .animals-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 20px 0;
+    }
+
+    .ui-bookmark {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .ui-bookmark input {
+        display: none;
+    }
+
+    .ui-bookmark .bookmark svg {
+        fill: #ccc; /* Default gray color */
+        transition: fill 0.3s ease, transform 0.3s ease;
+    }
+
+    .ui-bookmark input:checked + .bookmark svg {
+        fill: #ff6b6b; /* Pink color when checked */
+        animation: heart-burst 0.45s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+    }
+
+    @keyframes heart-burst {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.4); }
+        100% { transform: scale(1); }
+    }
+
+    .animal-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .animal-card img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover; /* This ensures the image covers the area without distortion */
+        border-radius: 8px 8px 0 0;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .animal-info {
+        padding: 15px;
+        flex: 1;
+    }
+
+    @media (max-width: 480px) {
+        .animal-card img {
+            width: 150px;
+            height: 150px;
+        }
+    }
+
+    .animals-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 20px 0;
+    }
+
+    .animal-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .animal-card-content {
+        flex: 1;
+    }
+
+    .animal-image {
+        text-align: center;
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+    .animal-image img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .more-photos {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+    }
+
+    .job-card-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        margin-top: 15px;
+    }
+
+    .job-card-actions a {
+        flex: 1;
+        padding: 8px 12px;
+        background-color: #bf591c;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        text-align: center;
+        transition: background-color 0.3s;
+    }
+
+    .job-card-actions a:hover {
+        background-color: #a64d18;
+    }
+
+    .view-photos-btn {
+        flex: 1;
+        padding: 8px 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .view-photos-btn:hover {
+        background-color: #0056b3;
+    }
+
+    @media (max-width: 480px) {
+        .animal-image img {
+            width: 150px;
+            height: 150px;
+        }
+
+        .job-card-actions {
+            flex-direction: column;
+        }
+
+        .job-card-actions a {
+            margin: 5px 0;
+        }
+    }
+
+    /* Modal Gallery Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+
+    .modal-content img {
+        max-width: 90%;
+        max-height: 90vh;
+        object-fit: contain;
+        margin: auto; /* Center the image horizontally and vertically */
+        display: block; /* Ensure the image is a block-level element */
+    }
+
+    .close {
+        position: absolute;
+        top: 10px;
+        right: 25px;
+        color: white;
+        font-size: 35px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: #bbb;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .modal-images {
+        display: flex;
+        overflow-x: auto;
+    }
+
+    .modal-images img {
+        margin: auto;
+        display: block;
+        width: 100%;
+        max-width: 700px;
+    }
+
+    .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.3); /* Semi-transparent background */
+        color: white;
+        border: none;
+        padding: 10px; /* Reduced padding */
+        cursor: pointer;
+        border-radius: 50%;
+        transition: background 0.3s;
+        font-size: 20px; /* Reduced font size */
+        width: 40px; /* Set a fixed width */
+        height: 40px; /* Set a fixed height */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-btn:hover {
+        background: rgba(0,0,0,0.5); /* Darker background on hover */
+    }
+
+    .prev-btn { left: 10px; } /* Reduced distance from the edge */
+    .next-btn { right: 10px; } /* Reduced distance from the edge */
+
+    .image-counter {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 16px;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    .tap-note {
+        font-size: 0.8em;
+        color: #777;
+        text-align: center;
+        margin-top: 5px;
+    }
+</style>
 
 <script>
 function toggleFilterInputs() {
@@ -119,6 +436,8 @@ function toggleFilterInputs() {
 
 document.querySelectorAll('.ui-bookmark input').forEach(input => {
     const animalId = input.getAttribute('data-animal-id');
+    const label = input.closest('.ui-bookmark');
+
     input.addEventListener('change', function(e) {
         e.preventDefault();
         this.disabled = true;
@@ -135,6 +454,11 @@ document.querySelectorAll('.ui-bookmark input').forEach(input => {
         .then(data => {
             if (data.success) {
                 this.checked = data.saved;
+                if (data.saved) {
+                    label.classList.add('liked');
+                } else {
+                    label.classList.remove('liked');
+                }
             } else if (data.message === 'Please log in first') {
                 window.location.href = '/login';
             } else {
@@ -151,6 +475,65 @@ document.querySelectorAll('.ui-bookmark input').forEach(input => {
             this.disabled = false;
         });
     });
+});
+
+// Modal Gallery Script
+let currentGallery = {
+    images: [],
+    currentIndex: 0
+};
+
+function openGallery(photos) {
+    const imageList = photos.split(',').map(img => `/static/uploads/${img}`);
+    currentGallery.images = imageList;
+    currentGallery.currentIndex = 0;
+    updateGalleryView();
+    document.getElementById('gallery-modal').style.display = 'block';
+}
+
+function updateGalleryView() {
+    const modal = document.getElementById('gallery-modal');
+    const img = document.getElementById('gallery-image');
+    const counter = document.getElementById('image-counter');
+    
+    img.src = currentGallery.images[currentGallery.currentIndex];
+    counter.textContent = `${currentGallery.currentIndex + 1}/${currentGallery.images.length}`;
+}
+
+document.getElementById('close-modal').onclick = () => {
+    document.getElementById('gallery-modal').style.display = 'none';
+};
+
+document.getElementById('prev-btn').onclick = () => {
+    currentGallery.currentIndex = (currentGallery.currentIndex - 1 + currentGallery.images.length) % currentGallery.images.length;
+    updateGalleryView();
+};
+
+document.getElementById('next-btn').onclick = () => {
+    currentGallery.currentIndex = (currentGallery.currentIndex + 1) % currentGallery.images.length;
+    updateGalleryView();
+};
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('gallery-modal').style.display === 'block') {
+        if (e.key === 'ArrowLeft') document.getElementById('prev-btn').click();
+        if (e.key === 'ArrowRight') document.getElementById('next-btn').click();
+        if (e.key === 'Escape') document.getElementById('close-modal').click();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.createElement('div');
+    modal.id = 'myModal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <div class="modal-images" id="modalImages"></div>
+        </div>
+    `;
+    document.body.appendChild(modal);
 });
 </script>
 {% endblock %}

@@ -4,53 +4,209 @@
 
 {% block content %}
 <div class="container">
-    <h1>{{ get_text('liked jobs') }}</h1>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
+        <a href="{{ url_for('post_job') }}">{{ get_text('post job') }}</a> |
+        <a href="{{ url_for('search_jobs') }}">{{ get_text('search jobs') }}</a>
+    </nav>
+
+    <h2>{{ get_text('liked jobs') }}</h2>
+
     {% if saved_jobs %}
         <div class="jobs-wrapper">
             {% for job in saved_jobs %}
                 <div class="job-card">
                     <div class="job-card-content">
                         <h3>{{ job.title }}</h3>
-                        <p><strong>{{ get_text('job description') }}:</strong> {{ job.description }}</p>
-                        <p><strong>{{ get_text('job location') }}:</strong> {{ job.location }}</p>
-                        <p><strong>{{ get_text('salary') }}:</strong> {{ job.salary or get_text('not specified') }}</p>
-                        <p><strong>{{ get_text('saved on') }}:</strong> {{ job.saved_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
+                        <p><strong>{{ get_text('job_description') }}:</strong> {{ job.description }}</p>
+                        <p><strong>{{ get_text('job_location') }}:</strong> {{ job.location }}</p>
+                        <p><strong>{{ get_text('phone_number') }}:</strong> {{ job.phone_number }}</p>
+                        <p><strong>{{ get_text('salary') }}:</strong> {{ job.salary or get_text('not_specified') }}</p>
+                        <p><strong>{{ get_text('job_type') }}:</strong> {{ get_text(job.job_type) }}</p>
+                        <p><strong>{{ get_text('posted by') }}:</strong> 
+                            <img src="{{ url_for('static', filename='avatars/' + job.profile_picture) }}" alt="Profile Picture" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle;">
+                            {{ job.full_name }}
+                        </p>
+                        <p><strong>{{ get_text('saved_on') }}:</strong> {{ job.saved_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
                     </div>
                     <div class="job-card-actions">
-                        <button class="remove-job-btn" data-job-id="{{ job.id }}" style="background: none; border: none; cursor: pointer;">
-                            <span class="remove-icon" style="color: red;">❌</span>
-                        </button>
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ job.location }}, {{ job.village_name }}, {{ job.mandal_name }}, {{ job.district }}, {{ job.pincode }}" target="_blank">{{ get_text('view_on_map') }}</a>
+                        <a href="https://wa.me/+91{{ job.phone_number }}?text={{ get_text('hello_interested_in_job') }} {{ job.title }}" target="_blank">{{ get_text('contact_on_whatsapp') }}</a>
+                        <a href="sms:+91{{ job.phone_number }}?body={{ get_text('hello_interested_in_job') }} {{ job.title }}">{{ get_text('contact_via_sms') }}</a>
+                        <label class="ui-bookmark">
+                            <input type="checkbox" data-job-id="{{ job.id }}" checked>
+                            <div class="bookmark">
+                                <svg 
+                                    viewBox="0 0 16 16"
+                                    class="bi bi-heart-fill"
+                                    height="25"
+                                    width="25"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
+                                    ></path>
+                                </svg>
+                            </div>
+                        </label>
                     </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <p>{{ get_text('no liked jobs') }}</p>
+        <p>{{ get_text('no_jobs_found') }}</p>
     {% endif %}
 </div>
 
-<script>
-    document.querySelectorAll('.remove-job-btn').forEach(button => {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            const jobId = this.getAttribute('data-job-id');
-            const jobCard = this.closest('.job-card');
+<style>
+    body {
+        padding: 0;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
 
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 15px;
+        box-sizing: border-box;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto; 
+    }
+
+    .jobs-wrapper {
+        display: flex;
+        flex-direction: column; 
+        gap: 15px;
+        padding: 20px 0;
+    }
+
+    .job-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .job-card-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        margin-top: 15px;
+    }
+
+    .job-card-actions a {
+        flex: 1;
+        padding: 8px 12px;
+        background-color: #bf591c;  
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        text-align: center;
+        transition: background-color 0.3s;
+    }
+
+    .job-card-actions a:hover {
+        background-color: #a64d18; 
+    }
+
+    .ui-bookmark {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .ui-bookmark input {
+        display: none;
+    }
+
+    .ui-bookmark .bookmark svg {
+        fill: #ccc; /* Default gray color */
+        transition: fill 0.3s ease, transform 0.3s ease;
+    }
+
+    .ui-bookmark input:checked + .bookmark svg {
+        fill: #ff6b6b; /* Pink color when checked */
+        animation: heart-burst 0.45s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+    }
+
+    @keyframes heart-burst {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.4); }
+        100% { transform: scale(1); }
+    }
+
+    @media (max-width: 480px) {
+        .container {
+            width: 100%;
+            margin: 0;
+            padding: 10px;
+            height: 100vh;
+        }
+
+        .job-card-actions {
+            flex-direction: column;
+        }
+
+        .job-card-actions a {
+            margin: 5px 0;
+        }
+    }
+</style>
+
+<script>
+    document.querySelectorAll('.ui-bookmark input').forEach(input => {
+        const jobId = input.getAttribute('data-job-id');
+        const label = input.closest('.ui-bookmark');
+
+        input.addEventListener('change', function(e) {
+            e.preventDefault();
+            
+            // Disable the input while processing
+            this.disabled = true;
+            
             fetch(`/save_job/${jobId}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success && !data.saved) {
-                    jobCard.remove();
+                if (data.success) {
+                    this.checked = data.saved;
+                    // Add animation class
+                    if (data.saved) {
+                        label.classList.add('liked');
+                    } else {
+                        label.classList.remove('liked');
+                    }
+                } else if (data.message === 'Please log in first') {
+                    window.location.href = '/login';
                 } else {
                     alert(data.message || 'An error occurred');
+                    this.checked = !this.checked;
                 }
             })
-            .catch(err => console.error('Error:', err));
+            .catch(err => {
+                console.error('Error:', err);
+                this.checked = !this.checked;
+                alert('Failed to save job. Please try again.');
+            })
+            .finally(() => {
+                // Re-enable the input
+                this.disabled = false;
+            });
         });
     });
 </script>

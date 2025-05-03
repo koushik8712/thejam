@@ -1,6 +1,0 @@
-python3-distutils
-python3-setuptools
-python3-dev
-default-libmysqlclient-dev
-pkg-config
-build-essential

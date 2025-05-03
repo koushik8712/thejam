@@ -1,6 +1,0 @@
-2025-05-01 09:42:16,088 INFO: Rural Jobs startup [in C:\DEVTOOLS\project\jam\app.py:918]
-2025-05-01 09:54:48,274 INFO: Rural Jobs startup [in C:\DEVTOOLS\project\jam\app.py:918]
-2025-05-01 09:55:49,395 INFO: Rural Jobs startup [in C:\DEVTOOLS\project\jam\app.py:918]
-2025-05-01 09:56:15,852 ERROR: Database connection failed: 2003 (HY000): Can't connect to MySQL server on 'containers-us-west-XXX.railway.app:3306' (10060) [in C:\DEVTOOLS\project\jam\app.py:69]
-2025-05-01 09:56:15,853 ERROR: Database error during login: 2003 (HY000): Can't connect to MySQL server on 'containers-us-west-XXX.railway.app:3306' (10060) [in C:\DEVTOOLS\project\jam\app.py:139]
-2025-05-01 09:56:24,153 ERROR: Database connection failed: 2003 (HY000): Can't connect to MySQL server on 'containers-us-west-XXX.railway.app:3306' (10060) [in C:\DEVTOOLS\project\jam\app.py:69]

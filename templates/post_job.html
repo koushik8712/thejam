@@ -15,11 +15,16 @@
     {% endwith %}
 
     <h2>📢 {{ get_text('welcome') }}</h2>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a> |
+        <a href="{{ url_for('search_jobs') }}">{{ get_text('search jobs') }}</a> |
+        <a href="{{ url_for('saved_jobs') }}">{{ get_text('liked jobs') }}</a>
+    </nav>
     <form action="{{ url_for('post_job') }}" method="POST">
         <label for="title">{{ get_text('job_title') }}</label>
         <select name="title" id="title" required>
             <option value="" disabled selected>{{ get_text('select_job') }}</option>
-            {% for title in job_titles %}
+            {% for title in job_titles %} 
             <option value="{{ title }}">{{ get_text(title) }}</option>
             {% endfor %}
         </select>
@@ -52,23 +57,22 @@
         <select name="job_type" id="job_type" required>
             <option value="" disabled selected>{{ get_text('select_job_type') }}</option>
             <option value="full_time">{{ get_text('full_time') }}</option>
-           <option value="part_time">{{ get_text('part_time') }}</option>
- <option value="contract">{{ get_text('contract') }}</option>
+            <option value="part_time">{{ get_text('part_time') }}</option>
+            <option value="contract">{{ get_text('contract') }}</option>
         </select>
 
- <button type="submit">{{ get_text('submit') }}</button>
+        <button type="submit">{{ get_text('submit') }}</button>
     </form>
 
     <script>
         const locationInput = document.getElementById('location');
-  locationInput.addEventListener('input', () => {
-     const location = locationInput.value.trim();
-      if (location) {
-     console.log(`Location entered: ${location}`);
- }
-});
+        locationInput.addEventListener('input', () => {
+            const location = locationInput.value.trim();
+            if (location) {
+                console.log(`Location entered: ${location}`);
+            }
+        });
     </script>
     <br>
-    <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a>
 </div>
 {% endblock %}
