@@ -14,20 +14,21 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Create and activate virtual environment
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p static/uploads static/avatars
+RUN mkdir -p static/uploads static/avatars logs
+
+# Set environment variables
+ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONPATH=/app
 
 # Expose port
-EXPOSE 5000
+EXPOSE 8080
 
 # Run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]

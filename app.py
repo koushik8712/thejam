@@ -7,7 +7,6 @@ import bcrypt
 from werkzeug.utils import secure_filename
 import secrets
 from datetime import datetime, timedelta
-import pandas as pd
 from dotenv import load_dotenv  # Added for environment variables
 import logging
 from logging.handlers import RotatingFileHandler
@@ -16,6 +15,14 @@ import time
 import socket
 from contextlib import contextmanager
 from markupsafe import escape
+
+# Make pandas optional
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+    print("Warning: pandas not available, some features may be limited")
 
 
 # Load environment variables from .env file
