@@ -37,18 +37,6 @@ AVATARS = [
     "male1.jpg", "male2.jpg", "male3.jpg", "male4.jpg"
 ]
 
-# Ensure avatar files exist
-def ensure_default_avatars():
-    avatars_path = os.path.join(app.static_folder, 'avatars')
-    os.makedirs(avatars_path, exist_ok=True)
-    for avatar in AVATARS:
-        default_path = os.path.join('default_avatars', avatar)
-        target_path = os.path.join(avatars_path, avatar)
-        if os.path.exists(default_path) and not os.path.exists(target_path):
-            shutil.copy(default_path, target_path)
-
-ensure_default_avatars()
-
 RURAL_JOB_TITLES = [
     "Farmer", "Daily Laborer", "Animal Caretaker", "Tractor Driver",
     "Irrigation Technician", "Crop Harvester", "Fertilizer Sprayer",
@@ -415,113 +403,113 @@ def edit_profile():
 
         cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
         user = cursor.fetchone()
-        cursor.close()rip(),
-scription', '').strip(),
-    return render_template('edit_profile.html', user=user, avatars=AVATARS)ocation', '').strip(),
-# Optional
-@app.route('/post_job', methods=['GET', 'POST']) '').strip(),
-def post_job():            'job_type': request.form.get('job_type', '').strip()
+        cursor.close()
+
+    return render_template('edit_profile.html', user=user, avatars=AVATARS)
+
+@app.route('/post_job', methods=['GET', 'POST'])
+def post_job():
     if 'user_id' not in session:
         flash("You must be logged in to post a job.", "warning")
         return redirect(url_for('home'))
-        app.logger.info(f"Received job post data: {form_data}")
+
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
         location = request.form.get('location')
         salary = request.form.get('salary')
-        phone_number = request.form.get('phone_number')t form_data['location']: missing_fields.append('Location')
-        job_type = request.form.get('job_type')  # New field'phone_number']: missing_fields.append('Phone Number')
-job_type']: missing_fields.append('Job Type')
+        phone_number = request.form.get('phone_number')
+        job_type = request.form.get('job_type')  # New field
+
         if not title or not description or not location or not phone_number or not job_type:
             flash("All fields except salary are required!", "danger")
-            return redirect(url_for('post_job')) {', '.join(missing_fields)}", "danger")
-            return render_template('post_job.html', job_titles=RURAL_JOB_TITLES, form_data=form_data)
+            return redirect(url_for('post_job'))
+
         with get_db_connection() as conn:
-            cursor = conn.cursor()        try:
-            cursor.execute(            with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
                 "INSERT INTO jobs (title, description, location, salary, phone_number, job_type, posted_by) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                (title, description, location, salary, phone_number, job_type, session['user_id'])rsor.execute(
+                (title, description, location, salary, phone_number, job_type, session['user_id'])
             )
-            conn.commit()n, salary, phone_number, job_type, posted_by) 
-            cursor.close()%s, %s)""",
-escription'], form_data['location'],
-        flash("Job posted successfully!", "success")ta['phone_number'], form_data['job_type'],
+            conn.commit()
+            cursor.close()
+
+        flash("Job posted successfully!", "success")
         return redirect(url_for('post_job'))
 
     return render_template('post_job.html', job_titles=RURAL_JOB_TITLES)
-                flash("Job posted successfully!", "success")
-or('search_jobs'))
+
+
 @app.route('/search_jobs', methods=['GET', 'POST'])
-def search_jobs():            app.logger.error(f"Error posting job: {str(e)}")
-    filter_by = request.form.get('filter_by', '')An error occurred while posting the job", "danger")
-    salary_min = request.form.get('salary_min', '')B_TITLES, form_data=form_data)
+def search_jobs():
+    filter_by = request.form.get('filter_by', '')
+    salary_min = request.form.get('salary_min', '')
     salary_max = request.form.get('salary_max', '')
-    sort_salary = request.form.get('sort_salary', '')render_template('post_job.html', job_titles=RURAL_JOB_TITLES)
+    sort_salary = request.form.get('sort_salary', '')
     job_title = request.form.get('job_title', '')
-    location = request.form.get('location', '')_jobs', methods=['GET', 'POST'])
-    date_posted = request.form.get('date_posted', '')def search_jobs():
-    job_type = request.form.get('job_type', '')'filter_by', '')
-orm.get('salary_min', '')
+    location = request.form.get('location', '')
+    date_posted = request.form.get('date_posted', '')
+    job_type = request.form.get('job_type', '')
+
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)salary', '')
-rm.get('job_title', '')
+        cursor = conn.cursor(dictionary=True)
+
         query = """
-        SELECT jobs.*, users.full_name, users.profile_picture FROM jobsposted', '')
+        SELECT jobs.*, users.full_name, users.profile_picture FROM jobs
         JOIN users ON jobs.posted_by = users.id
         """
-        filters = []:
+        filters = []
         params = []
 
         if filter_by == 'salary':
-            if salary_min:cture FROM jobs
+            if salary_min:
                 filters.append("CAST(jobs.salary AS UNSIGNED) >= %s")
                 params.append(salary_min)
             if salary_max:
                 filters.append("CAST(jobs.salary AS UNSIGNED) <= %s")
                 params.append(salary_max)
-        elif filter_by == 'job_title' and job_title:        if filter_by == 'salary':
-            filters.append("jobs.title = %s")ry_min:
-            params.append(job_title)SIGNED) >= %s")
-        elif filter_by == 'location' and location:                params.append(salary_min)
+        elif filter_by == 'job_title' and job_title:
+            filters.append("jobs.title = %s")
+            params.append(job_title)
+        elif filter_by == 'location' and location:
             filters.append("jobs.location LIKE %s")
-            params.append(f"%{location}%")")
+            params.append(f"%{location}%")
         elif filter_by == 'date_posted' and date_posted:
             filters.append("DATEDIFF(NOW(), jobs.created_at) <= %s")
-            params.append(date_posted)            filters.append("jobs.title = %s")
+            params.append(date_posted)
         elif filter_by == 'job_type' and job_type:
-            filters.append("jobs.job_type = %s")ion' and location:
-            params.append(job_type)            filters.append("jobs.location LIKE %s")
-cation}%")
-        if filters:and date_posted:
+            filters.append("jobs.job_type = %s")
+            params.append(job_type)
+
+        if filters:
             query += " WHERE " + " AND ".join(filters)
 
-        if sort_salary == 'high_to_low':filter_by == 'job_type' and job_type:
-            query += " ORDER BY CAST(jobs.salary AS UNSIGNED) DESC""jobs.job_type = %s")
-        elif sort_salary == 'low_to_high':            params.append(job_type)
+        if sort_salary == 'high_to_low':
+            query += " ORDER BY CAST(jobs.salary AS UNSIGNED) DESC"
+        elif sort_salary == 'low_to_high':
             query += " ORDER BY CAST(jobs.salary AS UNSIGNED) ASC"
-        if filters:
-        cursor.execute(query, tuple(params))E " + " AND ".join(filters)
+
+        cursor.execute(query, tuple(params))
         jobs = cursor.fetchall()
-lary == 'high_to_low':
-        if 'user_id' in session:(jobs.salary AS UNSIGNED) DESC"
-            user_id = session['user_id']'low_to_high':
-            cursor.execute("SELECT job_id FROM bookmarks WHERE user_id = %s", (user_id,))Y CAST(jobs.salary AS UNSIGNED) ASC"
+
+        if 'user_id' in session:
+            user_id = session['user_id']
+            cursor.execute("SELECT job_id FROM bookmarks WHERE user_id = %s", (user_id,))
             saved_jobs = [row['job_id'] for row in cursor.fetchall()]
-        else:ple(params))
-            saved_jobs = []ll()
+        else:
+            saved_jobs = []
 
         cursor.close()
-ion['user_id']
-    return render_template(ser_id = %s", (user_id,))
-        "search_jobs.html",       saved_jobs = [row['job_id'] for row in cursor.fetchall()]
-        jobs=jobs,        else:
+
+    return render_template(
+        "search_jobs.html",
+        jobs=jobs,
         job_titles=RURAL_JOB_TITLES,
         filter_by=filter_by,
         salary_min=salary_min,
         salary_max=salary_max,
         sort_salary=sort_salary,
-        job_title=job_title,        "search_jobs.html",
+        job_title=job_title,
         location=location,
         date_posted=date_posted,
         job_type=job_type,
@@ -532,406 +520,387 @@ ion['user_id']
 def post_animal():
     if 'user_id' not in session:
         flash("You must be logged in to post an animal.", "warning")
-        return redirect(url_for('home'))late
+        return redirect(url_for('home'))
 
     if request.method == 'POST':
         category = request.form.get('animal_category')
-        custom_animal = request.form.get('custom_animal', '')def post_animal():
+        custom_animal = request.form.get('custom_animal', '')
         animal_name = custom_animal if category == 'custom' else category
-        age = request.form.get('animal_age')")
+        age = request.form.get('animal_age')
         age = int(age) if age and age.strip() else None
         breed = request.form.get('animal_breed')
-        breed = breed if breed and breed.strip() else NoneST':
-        weight = request.form.get('animal_weight')orm.get('animal_category')
-        price = request.form.get('animal_cost')stom_animal', '')
-        description = request.form.get('animal_description')' else category
+        breed = breed if breed and breed.strip() else None
+        weight = request.form.get('animal_weight')
+        price = request.form.get('animal_cost')
+        description = request.form.get('animal_description')
         location = request.form.get('animal_location')
-        contact_number = request.form.get('contact_number')se None
-        photos = request.files.getlist('animal_photos')        breed = request.form.get('animal_breed')
-strip() else None
-        if not all([animal_name, weight, price, location, contact_number]):'animal_weight')
-            flash("Please fill in all required fields!", "danger")m.get('animal_cost')
+        contact_number = request.form.get('contact_number')
+        photos = request.files.getlist('animal_photos')
+
+        if not all([animal_name, weight, price, location, contact_number]):
+            flash("Please fill in all required fields!", "danger")
             return redirect(url_for('post_animal'))
 
         photo_filenames = []
         for photo in photos:
             if allowed_file(photo.filename):
-                filename = secure_filename(photo.filename)t all([animal_name, weight, price, location, contact_number]):
-                photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename)) fill in all required fields!", "danger")
-                photo_filenames.append(filename)t(url_for('post_animal'))
+                filename = secure_filename(photo.filename)
+                photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                photo_filenames.append(filename)
 
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute(            if allowed_file(photo.filename):
-                """INSERT INTO animals (category, age, breed, weight, cost, description, to.filename)
-                   location, contact_number, photos, posted_by)                photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            cursor.execute(
+                """INSERT INTO animals (category, age, breed, weight, cost, description, 
+                   location, contact_number, photos, posted_by)
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                 (animal_name, age, breed, weight, price, description, location, 
                  contact_number, ','.join(photo_filenames), session.get('user_id'))
             )
             conn.commit()
-            cursor.close()ge, breed, weight, cost, description, 
-otos, posted_by)
-        flash("Animal posted successfully!", "success")%s, %s, %s, %s, %s)""",
-        return redirect(url_for('search_animals'))                (animal_name, age, breed, weight, price, description, location, 
-join(photo_filenames), session.get('user_id'))
+            cursor.close()
+
+        flash("Animal posted successfully!", "success")
+        return redirect(url_for('search_animals'))
+
     return render_template('post_animal.html')
-mmit()
+
 @app.route('/search_animals', methods=['GET', 'POST'])
 def search_animals():
-    filter_by = request.form.get('filter_by', '')ess")
-    price_min = request.form.get('price_min', '')urn redirect(url_for('search_animals'))
+    filter_by = request.form.get('filter_by', '')
+    price_min = request.form.get('price_min', '')
     price_max = request.form.get('price_max', '')
-    sort_price = request.form.get('sort_price', '')emplate('post_animal.html')
+    sort_price = request.form.get('sort_price', '')
     category = request.form.get('category', '')
-    location = request.form.get('location', '')thods=['GET', 'POST'])
+    location = request.form.get('location', '')
 
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)min', '')
-        query = """orm.get('price_max', '')
+        cursor = conn.cursor(dictionary=True)
+        query = """
         SELECT animals.*, users.full_name, users.profile_picture 
-        FROM animalsy', '')
+        FROM animals
         JOIN users ON animals.posted_by = users.id
         """
-        filters = []n:
+        filters = []
         params = []
 
-        if filter_by == 'price': users.profile_picture 
-            if price_min:        FROM animals
-                filters.append("animals.cost >= %s")ON animals.posted_by = users.id
+        if filter_by == 'price':
+            if price_min:
+                filters.append("animals.cost >= %s")
                 params.append(price_min)
-            if price_max:        filters = []
+            if price_max:
                 filters.append("animals.cost <= %s")
                 params.append(price_max)
         elif filter_by == 'category' and category:
             filters.append("animals.category = %s")
-            params.append(category)                filters.append("animals.cost >= %s")
+            params.append(category)
         elif filter_by == 'location' and location:
             filters.append("animals.location LIKE %s")
-            params.append(f"%{location}%")                filters.append("animals.cost <= %s")
-ice_max)
-        if filters:
-            query += " WHERE " + " AND ".join(filters)%s")
+            params.append(f"%{location}%")
 
-        if sort_price == 'high_to_low':filter_by == 'location' and location:
-            query += " ORDER BY animals.cost DESC"imals.location LIKE %s")
-        elif sort_price == 'low_to_high':            params.append(f"%{location}%")
-            query += " ORDER BY animals.cost ASC"
         if filters:
-        cursor.execute(query, tuple(params))ers)
+            query += " WHERE " + " AND ".join(filters)
+
+        if sort_price == 'high_to_low':
+            query += " ORDER BY animals.cost DESC"
+        elif sort_price == 'low_to_high':
+            query += " ORDER BY animals.cost ASC"
+
+        cursor.execute(query, tuple(params))
         animals = cursor.fetchall()
 
-        if 'user_id' in session:DESC"
+        if 'user_id' in session:
             cursor.execute("SELECT animal_id FROM animal_bookmarks WHERE user_id = %s", 
-                         (session['user_id'],))C"
+                         (session['user_id'],))
             saved_animals = [row['animal_id'] for row in cursor.fetchall()]
-        else:)
+        else:
             saved_animals = []
 
         cursor.close()
-"SELECT animal_id FROM animal_bookmarks WHERE user_id = %s", 
-    return render_template('search_animals.html', n['user_id'],))
+
+    return render_template('search_animals.html', 
                          animals=animals,
-                         filter_by=filter_by,        else:
+                         filter_by=filter_by,
                          price_min=price_min,
                          price_max=price_max,
                          sort_price=sort_price,
                          category=category,
                          location=location,
-                         saved_animals=saved_animals)als,
+                         saved_animals=saved_animals)
 
-@app.route('/save_animal/<int:animal_id>', methods=['POST'])             price_min=price_min,
-def save_animal(animal_id):ice_max=price_max,
+@app.route('/save_animal/<int:animal_id>', methods=['POST'])
+def save_animal(animal_id):
     if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Please log in first'})tegory,
-            location=location,
-    user_id = session['user_id']aved_animals)
+        return jsonify({'success': False, 'message': 'Please log in first'})
+
+    user_id = session['user_id']
     try:
-        with get_db_connection() as conn:/<int:animal_id>', methods=['POST'])
+        with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM animals WHERE id = %s", (animal_id,))
-            if not cursor.fetchone():, 'message': 'Please log in first'})
+            if not cursor.fetchone():
                 return jsonify({'success': False, 'message': 'Animal not found'})
-            d']
+            
             cursor.execute(
-                "SELECT id FROM animal_bookmarks WHERE user_id = %s AND animal_id = %s",) as conn:
+                "SELECT id FROM animal_bookmarks WHERE user_id = %s AND animal_id = %s",
                 (user_id, animal_id)
-            )OM animals WHERE id = %s", (animal_id,))
-            existing = cursor.fetchone()t cursor.fetchone():
-            fy({'success': False, 'message': 'Animal not found'})
+            )
+            existing = cursor.fetchone()
+            
             if existing:
-                cursor.execute(e(
-                    "DELETE FROM animal_bookmarks WHERE user_id = %s AND animal_id = %s",d = %s AND animal_id = %s",
-                    (user_id, animal_id)    (user_id, animal_id)
+                cursor.execute(
+                    "DELETE FROM animal_bookmarks WHERE user_id = %s AND animal_id = %s",
+                    (user_id, animal_id)
                 )
                 saved = False
             else:
-                cursor.execute(            if existing:
-                    "INSERT INTO animal_bookmarks (user_id, animal_id) VALUES (%s, %s)",te(
-                    (user_id, animal_id)"DELETE FROM animal_bookmarks WHERE user_id = %s AND animal_id = %s",
-                )imal_id)
+                cursor.execute(
+                    "INSERT INTO animal_bookmarks (user_id, animal_id) VALUES (%s, %s)",
+                    (user_id, animal_id)
+                )
                 saved = True
                 
-            conn.commit()            else:
+            conn.commit()
             return jsonify({'success': True, 'saved': saved})
-            arks (user_id, animal_id) VALUES (%s, %s)",
-    except Exception as e:id, animal_id)
+            
+    except Exception as e:
         app.logger.error(f"Error saving animal: {str(e)}")
         return jsonify({'success': False, 'message': 'Database error occurred'})
 
 @app.route('/saved_animals')
-def saved_animals():saved})
+def saved_animals():
     if 'user_id' not in session:
         flash("Please log in first.", "warning")
-        return redirect(url_for('home'))ving animal: {str(e)}")
- 'message': 'Database error occurred'})
+        return redirect(url_for('home'))
+
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)@app.route('/saved_animals')
+        cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-            SELECT animals.*, animal_bookmarks.created_at AS saved_at,     if 'user_id' not in session:
+            SELECT animals.*, animal_bookmarks.created_at AS saved_at, 
                    users.full_name, users.profile_picture
-            FROM animal_bookmarkst(url_for('home'))
+            FROM animal_bookmarks
             JOIN animals ON animal_bookmarks.animal_id = animals.id
             JOIN users ON animals.posted_by = users.id
-            WHERE animal_bookmarks.user_id = %scursor = conn.cursor(dictionary=True)
+            WHERE animal_bookmarks.user_id = %s
             ORDER BY animal_bookmarks.created_at DESC
-        """, (session['user_id'],))eated_at AS saved_at, 
+        """, (session['user_id'],))
         saved_animals = cursor.fetchall()
         cursor.close()
-JOIN animals ON animal_bookmarks.animal_id = animals.id
-    return render_template('saved_animals.html', saved_animals=saved_animals)rs ON animals.posted_by = users.id
-r_id = %s
+
+    return render_template('saved_animals.html', saved_animals=saved_animals)
+
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
-    if request.method == 'POST':imals = cursor.fetchall()
+    if request.method == 'POST':
         login_id = request.form.get('login_id')  # Can be username or phone
         
         with get_db_connection() as conn:
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM users WHERE username = %s OR phone_number = %s", (login_id, login_id))ot_password', methods=['GET', 'POST'])
+            cursor.execute("SELECT * FROM users WHERE username = %s OR phone_number = %s", (login_id, login_id))
             user = cursor.fetchone()
-            ethod == 'POST':
-            if user:id = request.form.get('login_id')  # Can be username or phone
+            
+            if user:
                 # Generate reset token
                 reset_token = secrets.token_urlsafe(32)
-                expires_at = datetime.now() + timedelta(hours=1)cursor = conn.cursor(dictionary=True)
-                umber = %s", (login_id, login_id))
-                # Store reset token in databasefetchone()
-                cursor.execute(    
+                expires_at = datetime.now() + timedelta(hours=1)
+                
+                # Store reset token in database
+                cursor.execute(
                     "INSERT INTO password_resets (user_id, token, expires_at) VALUES (%s, %s, %s)",
-                    (user['id'], reset_token, expires_at)                # Generate reset token
+                    (user['id'], reset_token, expires_at)
                 )
-                conn.commit() = datetime.now() + timedelta(hours=1)
+                conn.commit()
                 
               
                 flash(f"Reset token: {reset_token}", "info")
-                return redirect(url_for('reset_password', token=reset_token))            "INSERT INTO password_resets (user_id, token, expires_at) VALUES (%s, %s, %s)",
-            _at)
+                return redirect(url_for('reset_password', token=reset_token))
+            
             flash("No account found with that username/phone number", "error")
             cursor.close()
-                
+        
     return render_template('forgot_password.html')
-, "info")
-@app.route('/reset_password/<token>', methods=['GET', 'POST'])token))
-def reset_password(token):    
-    if request.method == 'POST':that username/phone number", "error")
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if request.method == 'POST':
         new_password = request.form.get('new_password')
         confirm_password = request.form.get('confirm_password')
-        )
+        
         if not new_password or len(new_password) < 6:
-            flash("Password must be at least 6 characters long", "error")ds=['GET', 'POST'])
+            flash("Password must be at least 6 characters long", "error")
             return render_template('reset_password.html', token=token)
         
         if new_password != confirm_password:
-            flash("Passwords don't match", "error") = request.form.get('confirm_password')
+            flash("Passwords don't match", "error")
             return render_template('reset_password.html', token=token)
-        w_password) < 6:
-        with get_db_connection() as conn:flash("Password must be at least 6 characters long", "error")
-            cursor = conn.cursor(dictionary=True)nder_template('reset_password.html', token=token)
+        
+        with get_db_connection() as conn:
+            cursor = conn.cursor(dictionary=True)
             
             # Get reset record and check if valid
-            cursor.execute(n't match", "error")
-                """SELECT pr.*, u.username en)
+            cursor.execute(
+                """SELECT pr.*, u.username 
                    FROM password_resets pr
-                   JOIN users u ON u.id = pr.user_id db_connection() as conn:
-                   WHERE pr.token = %s AND pr.expires_at > NOW() AND pr.used = FALSE""",tionary=True)
+                   JOIN users u ON u.id = pr.user_id 
+                   WHERE pr.token = %s AND pr.expires_at > NOW() AND pr.used = FALSE""",
                 (token,)
-            )d and check if valid
-            reset = cursor.fetchone()or.execute(
+            )
+            reset = cursor.fetchone()
             
             if reset:
-                # Update password  JOIN users u ON u.id = pr.user_id 
-                hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()) AND pr.used = FALSE""",
+                # Update password
+                hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
                 cursor.execute(
                     "UPDATE users SET password = %s WHERE id = %s",
-                    (hashed_password, reset['user_id'])            reset = cursor.fetchone()
+                    (hashed_password, reset['user_id'])
                 )
                 # Mark token as used
-                cursor.execute("UPDATE password_resets SET used = TRUE WHERE id = %s", (reset['id'],))                # Update password
-                conn.commit()d_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
-                   cursor.execute(
-                flash(f"Password reset successful! You can now login with your new password", "success") "UPDATE users SET password = %s WHERE id = %s",
-                return redirect(url_for('login'))user_id'])
+                cursor.execute("UPDATE password_resets SET used = TRUE WHERE id = %s", (reset['id'],))
+                conn.commit()
+                
+                flash(f"Password reset successful! You can now login with your new password", "success")
+                return redirect(url_for('login'))
             else:
-                flash("Invalid or expired reset token", "error")                # Mark token as used
-                cursor.close() SET used = TRUE WHERE id = %s", (reset['id'],))
-                return redirect(url_for('forgot_password'))commit()
+                flash("Invalid or expired reset token", "error")
+                cursor.close()
+                return redirect(url_for('forgot_password'))
 
-    # GET request - show reset form        ur new password", "success")
-    return render_template('reset_password.html', token=token)                return redirect(url_for('login'))
+    # GET request - show reset form        
+    return render_template('reset_password.html', token=token)
 
-@app.route('/logout')        flash("Invalid or expired reset token", "error")
+@app.route('/logout')
 def logout():
-    session.clear()l_for('forgot_password'))
+    session.clear()
     flash("Logged out successfully!", "info")
-    return redirect(url_for('home'))    
+    return redirect(url_for('home'))
 
 @app.route('/save_job/<int:job_id>', methods=['POST'])
 def save_job(job_id):
-    if 'user_id' not in session::
+    if 'user_id' not in session:
         return jsonify({'success': False, 'message': 'Please log in first'})
-ssfully!", "info")
+
     user_id = session['user_id']
     try:
-        with get_db_connection() as conn:save_job/<int:job_id>', methods=['POST'])
+        with get_db_connection() as conn:
             cursor = conn.cursor()
-            _id' not in session:
-            # Check if job exists first'success': False, 'message': 'Please log in first'})
+            
+            # Check if job exists first
             cursor.execute("SELECT id FROM jobs WHERE id = %s", (job_id,))
-            if not cursor.fetchone():]
+            if not cursor.fetchone():
                 return jsonify({'success': False, 'message': 'Job not found'})
-            onn:
-            # Check if already bookmarkedr = conn.cursor()
+            
+            # Check if already bookmarked
             cursor.execute(
-                "SELECT id FROM bookmarks WHERE user_id = %s AND job_id = %s", ck if job exists first
-                (user_id, job_id)LECT id FROM jobs WHERE id = %s", (job_id,))
-            )one():
+                "SELECT id FROM bookmarks WHERE user_id = %s AND job_id = %s", 
+                (user_id, job_id)
+            )
             existing = cursor.fetchone()
             
-            if existing:ck if already bookmarked
+            if existing:
                 # Remove bookmark
-                cursor.execute("SELECT id FROM bookmarks WHERE user_id = %s AND job_id = %s", 
-                    "DELETE FROM bookmarks WHERE user_id = %s AND job_id = %s", job_id)
+                cursor.execute(
+                    "DELETE FROM bookmarks WHERE user_id = %s AND job_id = %s",
                     (user_id, job_id)
-                )existing = cursor.fetchone()
+                )
                 saved = False
             else:
                 # Add bookmark
-                cursor.execute(                cursor.execute(
-                    "INSERT INTO bookmarks (user_id, job_id) VALUES (%s, %s)", WHERE user_id = %s AND job_id = %s",
-                    (user_id, job_id)d, job_id)
+                cursor.execute(
+                    "INSERT INTO bookmarks (user_id, job_id) VALUES (%s, %s)",
+                    (user_id, job_id)
                 )
                 saved = True
-                    else:
+                
             conn.commit()
             return jsonify({'success': True, 'saved': saved})
-            TO bookmarks (user_id, job_id) VALUES (%s, %s)",
+            
     except Exception as e:
         app.logger.error(f"Error saving job: {str(e)}")
         return jsonify({'success': False, 'message': 'Database error occurred'})
 
-@app.route('/get_job_status/<int:job_id>')    conn.commit()
-def get_job_status(job_id): saved})
-    if 'user_id' not in session:            
+@app.route('/get_job_status/<int:job_id>')
+def get_job_status(job_id):
+    if 'user_id' not in session:
         return jsonify({'success': False, 'message': 'Please log in first', 'saved': False})
-        r.error(f"Error saving job: {str(e)}")
-    user_id = session['user_id']': False, 'message': 'Database error occurred'})
+        
+    user_id = session['user_id']
     with get_db_connection() as conn:
-        cursor = conn.cursor()')
-        cursor.execute("SELECT * FROM bookmarks WHERE user_id = %s AND job_id = %s", def get_job_status(job_id):
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM bookmarks WHERE user_id = %s AND job_id = %s", 
                       (user_id, job_id))
-        saved = cursor.fetchone() is not Nonelse, 'message': 'Please log in first', 'saved': False})
+        saved = cursor.fetchone() is not None
         cursor.close()
-            user_id = session['user_id']
-    return jsonify({'success': True, 'saved': saved})() as conn:
-or()
+        
+    return jsonify({'success': True, 'saved': saved})
+
 @app.route('/saved_jobs', methods=['GET'])
-def saved_jobs():r_id, job_id))
+def saved_jobs():
     if 'user_id' not in session:
         flash("Please log in first.", "warning")
         return redirect(url_for('home'))
-saved})
+
     user_id = session['user_id']
-    with get_db_connection() as conn:T'])
+    with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
-    if 'user_id' not in session:
+
         # Fetch saved jobs
-        cursor.execute("""        return redirect(url_for('home'))
+        cursor.execute("""
             SELECT jobs.*, bookmarks.created_at AS saved_at, users.full_name, users.profile_picture
-            FROM bookmarkson['user_id']
-            JOIN jobs ON bookmarks.job_id = jobs.id get_db_connection() as conn:
-            JOIN users ON jobs.posted_by = users.idonary=True)
+            FROM bookmarks
+            JOIN jobs ON bookmarks.job_id = jobs.id
+            JOIN users ON jobs.posted_by = users.id
             WHERE bookmarks.user_id = %s
             ORDER BY bookmarks.created_at DESC
         """, (user_id,))
-        saved_jobs = cursor.fetchall()okmarks.created_at AS saved_at, users.full_name, users.profile_picture
+        saved_jobs = cursor.fetchall()
         cursor.close()
 
-    return render_template('saved_jobs.html', saved_jobs=saved_jobs)jobs.posted_by = users.id
+    return render_template('saved_jobs.html', saved_jobs=saved_jobs)
 
 @app.route('/health')
-def health_check():        """, (user_id,))
-    try:.fetchall()
-        # Test database connectione()
+def health_check():
+    try:
+        # Test database connection
         with get_db_connection() as conn:
-            cursor = conn.cursor()ml', saved_jobs=saved_jobs)
+            cursor = conn.cursor()
             cursor.execute('SELECT 1')
             cursor.fetchone()
             cursor.close()
         return jsonify({"status": "healthy", "database": "connected"}), 200
-    except Exception as e:nnection
+    except Exception as e:
         app.logger.error(f"Health check failed: {str(e)}")
-        return jsonify({"status": "unhealthy", "database": "disconnected", "error": str(e)}), 500cursor()
+        return jsonify({"status": "unhealthy", "database": "disconnected", "error": str(e)}), 500
 
-@app.route('/drop_indexes')            cursor.fetchone()
-def drop_indexes():close()
-    try:onify({"status": "healthy", "database": "connected"}), 200
+@app.route('/drop_indexes')
+def drop_indexes():
+    try:
         with get_db_connection() as conn:
-            cursor = conn.cursor()(f"Health check failed: {str(e)}")
-            cursor.execute("DROP INDEX idx_animal_search ON animals") 500
+            cursor = conn.cursor()
+            cursor.execute("DROP INDEX idx_animal_search ON animals")
             cursor.execute("DROP INDEX idx_animal_created ON animals")
             conn.commit()
-            cursor.close()op_indexes():
+            cursor.close()
         return "Indexes dropped successfully"
-    except Exception as e:n:
+    except Exception as e:
         return f"Error dropping indexes: {str(e)}"
-x_animal_search ON animals")
-# Configure logging            cursor.execute("DROP INDEX idx_animal_created ON animals")
+
+# Configure logging
 if not app.debug:
-    if not os.path.exists('logs'):            cursor.close()
-        os.mkdir('logs')s dropped successfully"
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
     file_handler = RotatingFileHandler('logs/rural_jobs.log', maxBytes=10240, backupCount=10)
     file_handler.setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
     ))
     file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)ot os.path.exists('logs'):
+    app.logger.addHandler(file_handler)
     app.logger.setLevel(logging.INFO)
-    app.logger.info('Rural Jobs startup')tatingFileHandler('logs/rural_jobs.log', maxBytes=10240, backupCount=10)
-etFormatter(logging.Formatter(
-app.jinja_env.filters['escapejs'] = escapeelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    app.logger.info('Rural Jobs startup')
 
-@app.errorhandler(404)file_handler.setLevel(logging.INFO)
+app.jinja_env.filters['escapejs'] = escape
+
+@app.errorhandler(404)
 def not_found_error(error):
-    return render_template('errors/404.html'), 404
-
-@app.errorhandler(500)
-def internal_error(error):apejs'] = escape
-    try:
-        db = get_db_connection()
-
-
-
-
-
-
-
-
-
-
-
-
-    app.run(host='0.0.0.0', port=port)    port = int(os.environ.get("PORT", 5000))if __name__ == '__main__':    return render_template('errors/500.html'), 500    app.logger.error(traceback.format_exc())    app.logger.error('Server Error: %s', str(error))            app.logger.error(f"Error handling 500 error: {str(e)}")    except Exception as e:        db.close()        db.rollback()def not_found_error(error):
     return render_template('errors/404.html'), 404
 
 @app.errorhandler(500)
