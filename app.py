@@ -59,7 +59,7 @@ def ensure_upload_dirs():
 
 ensure_upload_dirs()
 
-// ...existing code...
+# ...existing code...
 
 @contextmanager
 def get_db_connection():
@@ -99,7 +99,7 @@ def get_db_connection():
             conn.close()
             app.logger.info("Database connection closed")
 
-// ...existing code...
+# ...existing code...
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
