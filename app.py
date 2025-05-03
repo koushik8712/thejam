@@ -414,21 +414,25 @@ def post_job():
         return redirect(url_for('home'))
 
     if request.method == 'POST':
-        # Get and validate form data
         form_data = {
             'title': request.form.get('title', '').strip(),
             'description': request.form.get('description', '').strip(),
             'location': request.form.get('location', '').strip(),
-            'salary': request.form.get('salary', '').strip(),
+            'salary': request.form.get('salary', ''),  # Optional
             'phone_number': request.form.get('phone_number', '').strip(),
             'job_type': request.form.get('job_type', '').strip()
         }
-
+        
+        # Debug log
         app.logger.info(f"Received job post data: {form_data}")
-
-        # Check required fields
-        required_fields = ['title', 'description', 'location', 'phone_number', 'job_type']
-        missing_fields = [field for field in required_fields if not form_data[field]]
+        
+        # Validate required fields
+        missing_fields = []
+        if not form_data['title']: missing_fields.append('Job Title')
+        if not form_data['description']: missing_fields.append('Description')
+        if not form_data['location']: missing_fields.append('Location')
+        if not form_data['phone_number']: missing_fields.append('Phone Number')
+        if not form_data['job_type']: missing_fields.append('Job Type')
 
         if missing_fields:
             flash(f"Missing required fields: {', '.join(missing_fields)}", "danger")
@@ -437,32 +441,20 @@ def post_job():
         try:
             with get_db_connection() as conn:
                 cursor = conn.cursor()
-                
-                # Insert the job
-                insert_query = """
-                    INSERT INTO jobs (title, description, location, salary, phone_number, job_type, posted_by)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                """
-                cursor.execute(insert_query, (
-                    form_data['title'],
-                    form_data['description'],
-                    form_data['location'],
-                    form_data['salary'],
-                    form_data['phone_number'],
-                    form_data['job_type'],
-                    session['user_id']
-                ))
+                cursor.execute(
+                    """INSERT INTO jobs 
+                       (title, description, location, salary, phone_number, job_type, posted_by) 
+                       VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                    (form_data['title'], form_data['description'], form_data['location'],
+                     form_data['salary'], form_data['phone_number'], form_data['job_type'],
+                     session['user_id'])
+                )
                 conn.commit()
-                
-                # Log success
-                app.logger.info(f"Job posted successfully by user {session['user_id']}")
-                
                 flash("Job posted successfully!", "success")
                 return redirect(url_for('search_jobs'))
-
         except Exception as e:
             app.logger.error(f"Error posting job: {str(e)}")
-            flash("An error occurred while posting the job. Please try again.", "danger")
+            flash("An error occurred while posting the job", "danger")
             return render_template('post_job.html', job_titles=RURAL_JOB_TITLES, form_data=form_data)
 
     return render_template('post_job.html', job_titles=RURAL_JOB_TITLES)

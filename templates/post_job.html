@@ -20,76 +20,57 @@
         <a href="{{ url_for('search_jobs') }}">{{ get_text('search jobs') }}</a> |
         <a href="{{ url_for('saved_jobs') }}">{{ get_text('liked jobs') }}</a>
     </nav>
-    <form action="{{ url_for('post_job') }}" method="POST" id="jobPostForm">
-        <div class="form-group">
-            <label for="title">{{ get_text('job_title') }} *</label>
-            <select name="title" id="title" required>
-                <option value="">{{ get_text('select_job') }}</option>
-                {% for title in job_titles %} 
-                <option value="{{ title }}" {% if form_data and form_data.title == title %}selected{% endif %}>
-                    {{ get_text(title) }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
+    <form action="{{ url_for('post_job') }}" method="POST">
+        <label for="title">{{ get_text('job_title') }}</label>
+        <select name="title" id="title" required>
+            <option value="" disabled selected>{{ get_text('select_job') }}</option>
+            {% for title in job_titles %} 
+            <option value="{{ title }}">{{ get_text(title) }}</option>
+            {% endfor %}
+        </select>
 
-        <div class="form-group">
-            <label for="description">{{ get_text('job_description') }} *</label>
-            <textarea name="description" id="description" rows="4" required>{{ form_data.description if form_data else '' }}</textarea>
-        </div>
+        <label for="description">{{ get_text('job_description') }}</label>
+        <textarea name="description" id="description" rows="4" placeholder="{{ get_text('job_description') }}"></textarea>
 
-        <div class="form-group">
-            <label for="location">{{ get_text('job_location') }} *</label>
-            <input type="text" name="location" id="location" required value="{{ form_data.location if form_data else '' }}">
-        </div>
+        <label for="location">{{ get_text('job_location') }}</label>
+        <input type="text" name="location" id="location" required placeholder="{{ get_text('village_town') }}">
 
-        <div class="form-group">
-            <label for="salary">{{ get_text('salary') }}</label>
-            <input type="text" name="salary" id="salary" value="{{ form_data.salary if form_data else '' }}">
-        </div>
+        <label for="village_name">{{ get_text('village_name') }}</label>
+        <input type="text" name="village_name" id="village_name" placeholder="{{ get_text('village_name') }}">
 
-        <div class="form-group">
-            <label for="phone_number">{{ get_text('contact_info') }} *</label>
-            <input type="text" name="phone_number" id="phone_number" required pattern="[0-9]{10}" value="{{ form_data.phone_number if form_data else '' }}">
-        </div>
+        <label for="mandal_name">{{ get_text('mandal_name') }}</label>
+        <input type="text" name="mandal_name" id="mandal_name" placeholder="{{ get_text('mandal_name') }}">
 
-        <div class="form-group">
-            <label for="job_type">{{ get_text('job_type') }} *</label>
-            <select name="job_type" id="job_type" required>
-                <option value="">{{ get_text('select_job_type') }}</option>
-                <option value="full_time" {% if form_data and form_data.job_type == 'full_time' %}selected{% endif %}>{{ get_text('full_time') }}</option>
-                <option value="part_time" {% if form_data and form_data.job_type == 'part_time' %}selected{% endif %}>{{ get_text('part_time') }}</option>
-                <option value="contract" {% if form_data and form_data.job_type == 'contract' %}selected{% endif %}>{{ get_text('contract') }}</option>
-            </select>
-        </div>
+        <label for="district">{{ get_text('district') }}</label>
+        <input type="text" name="district" id="district" placeholder="{{ get_text('district') }}">
+
+        <label for="pincode">{{ get_text('pincode') }}</label>
+        <input type="text" name="pincode" id="pincode" placeholder="{{ get_text('pincode') }}">
+
+        <label for="salary">{{ get_text('salary') }}</label>
+        <input type="text" name="salary" id="salary" required placeholder="{{ get_text('salary_placeholder') }}">
+
+        <label for="phone_number">{{ get_text('contact_info') }}</label>
+        <input type="text" name="phone_number" id="phone_number" required placeholder="{{ get_text('phone_placeholder') }}">
+
+        <label for="job_type">{{ get_text('job_type') }}</label>
+        <select name="job_type" id="job_type" required>
+            <option value="" disabled selected>{{ get_text('select_job_type') }}</option>
+            <option value="full_time">{{ get_text('full_time') }}</option>
+            <option value="part_time">{{ get_text('part_time') }}</option>
+            <option value="contract">{{ get_text('contract') }}</option>
+        </select>
 
         <button type="submit">{{ get_text('submit') }}</button>
     </form>
 
     <script>
-        document.getElementById('jobPostForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const title = document.getElementById('title').value.trim();
-            const description = document.getElementById('description').value.trim();
-            const location = document.getElementById('location').value.trim();
-            const phone_number = document.getElementById('phone_number').value.trim();
-            const job_type = document.getElementById('job_type').value.trim();
-            
-            let errors = [];
-            
-            if (!title) errors.push("Job Title is required");
-            if (!description) errors.push("Description is required");
-            if (!location) errors.push("Location is required");
-            if (!phone_number) errors.push("Phone Number is required");
-            if (!job_type) errors.push("Job Type is required");
-            
-            if (errors.length > 0) {
-                alert(errors.join("\n"));
-                return;
+        const locationInput = document.getElementById('location');
+        locationInput.addEventListener('input', () => {
+            const location = locationInput.value.trim();
+            if (location) {
+                console.log(`Location entered: ${location}`);
             }
-            
-            this.submit();
         });
     </script>
     <br>
