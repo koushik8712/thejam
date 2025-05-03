@@ -59,24 +59,39 @@ def ensure_upload_dirs():
 
 ensure_upload_dirs()
 
+# Enhanced database connection handling
 @contextmanager
 def get_db_connection():
     conn = None
     try:
-        conn = mysql.connector.connect(
-            host=os.getenv('DB_HOST', 'localhost'),
-            user=os.getenv('DB_USER', 'root'),
-            password=os.getenv('DB_PASSWORD', 'projectjam@123'),
-            database=os.getenv('DB_NAME', 'rural_job_portal'),
-            port=int(os.getenv('DB_PORT', 3306))
-        )
+        # Get database configuration with fallbacks
+        db_config = {
+            'host': os.getenv('DB_HOST'),
+            'user': os.getenv('DB_USER'),
+            'password': os.getenv('DB_PASSWORD'),
+            'database': os.getenv('DB_NAME'),
+            'port': int(os.getenv('DB_PORT')),
+            'connect_timeout': 60,
+            'auth_plugin': 'mysql_native_password',
+            'ssl_disabled': True  # Add this line to disable SSL requirement
+        }
+        
+        app.logger.info(f"Attempting database connection to {db_config['host']}:{db_config['port']}")
+        conn = mysql.connector.connect(**db_config)
+        
+        # Configure connection
+        conn.autocommit = False
         yield conn
+        
     except mysql.connector.Error as e:
-        app.logger.error(f"Database connection failed: {e}")
+        app.logger.error(f"Database connection failed: {str(e)}")
+        if conn and conn.is_connected():
+            conn.rollback()
         raise
     finally:
-        if conn is not None and conn.is_connected():
+        if conn and conn.is_connected():
             conn.close()
+            app.logger.info("Database connection closed")
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -869,18 +884,41 @@ def drop_indexes():
     except Exception as e:
         return f"Error dropping indexes: {str(e)}"
 
+# Add health check endpoint
+@app.route('/db-test')
+def test_db():
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT 1')
+            result = cursor.fetchone()
+            cursor.close()
+            return jsonify({
+                'status': 'success',
+                'message': 'Database connection successful',
+                'db_host': os.getenv('DB_HOST'),
+                'db_name': os.getenv('DB_NAME')
+            })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'db_host': os.getenv('DB_HOST'),
+            'db_name': os.getenv('DB_NAME')
+        }), 500
+
 # Configure logging
-if not app.debug:
-    if not os.path.exists('logs'):
-        os.mkdir('logs')
-    file_handler = RotatingFileHandler('logs/rural_jobs.log', maxBytes=10240, backupCount=10)
-    file_handler.setFormatter(logging.Formatter(
-        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
-    ))
-    file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)
-    app.logger.setLevel(logging.INFO)
-    app.logger.info('Rural Jobs startup')
+if not os.path.exists('logs'):
+    os.makedirs('logs')
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s: %(message)s',
+    handlers=[
+        logging.FileHandler('logs/app.log'),
+        logging.StreamHandler()
+    ]
+)
 
 app.jinja_env.filters['escapejs'] = escape
 
