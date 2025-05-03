@@ -1,8 +1,29 @@
+# Python
 __pycache__/
-*.pyc
-instance/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+
+# Environment
 .env
 .env.*
+
+# Logs
 logs/
+*.log
+
+# Uploads
 static/uploads/*
+static/avatars/*
 !static/uploads/.gitkeep
+!static/avatars/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# System
+.DS_Store
+Thumbs.db
