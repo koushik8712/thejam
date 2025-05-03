@@ -2,8 +2,8 @@
 
 {% block content %}
 <div class="error-container">
-    <h1>{{ get_text('page_not_found') }}</h1>
-    <p>{{ get_text('page_not_found_message') }}</p>
+    <h1>{{ get_text('internal_error') }}</h1>
+    <p>{{ get_text('internal_error_message') }}</p>
     <a href="{{ url_for('home') }}">{{ get_text('back_to_home') }}</a>
 </div>
 {% endblock %}

@@ -884,21 +884,21 @@ if not app.debug:
 
 app.jinja_env.filters['escapejs'] = escape
 
+# Enhanced error handling
 @app.errorhandler(404)
 def not_found_error(error):
+    app.logger.error(f'Page not found: {request.url}')
     return render_template('errors/404.html'), 404
 
 @app.errorhandler(500)
 def internal_error(error):
+    app.logger.error(f'Server Error: {error}')
+    db = None
     try:
-        db = get_db_connection()
-        db.rollback()
-        db.close()
+        if 'db' in g:
+            g.db.rollback()
     except Exception as e:
-        app.logger.error(f"Error handling 500 error: {str(e)}")
-    
-    app.logger.error('Server Error: %s', str(error))
-    app.logger.error(traceback.format_exc())
+        app.logger.error(f'Error rolling back db: {e}')
     return render_template('errors/500.html'), 500
 
 if __name__ == '__main__':

@@ -647,3 +647,25 @@ button:active, .edit-profile-btn:active, .logout-btn:active {
     padding: 10px;
     border-radius: 5px;
 }
+
+.error-container {
+    text-align: center;
+    padding: 50px 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.error-container h1 {
+    color: #bf591e;
+    margin-bottom: 20px;
+}
+
+.error-container a {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #bf591e;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
