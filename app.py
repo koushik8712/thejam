@@ -7,6 +7,7 @@ import bcrypt
 from werkzeug.utils import secure_filename
 import secrets
 from datetime import datetime, timedelta
+import pandas as pd
 from dotenv import load_dotenv  # Added for environment variables
 import logging
 from logging.handlers import RotatingFileHandler
@@ -15,14 +16,6 @@ import time
 import socket
 from contextlib import contextmanager
 from markupsafe import escape
-
-# Make pandas optional
-try:
-    import pandas as pd
-    HAS_PANDAS = True
-except ImportError:
-    HAS_PANDAS = False
-    print("Warning: pandas not available, some features may be limited")
 
 
 # Load environment variables from .env file
@@ -59,47 +52,24 @@ def ensure_upload_dirs():
 
 ensure_upload_dirs()
 
-# ...existing code...
-
 @contextmanager
 def get_db_connection():
     conn = None
     try:
-        # Get database configuration with fallbacks
-        db_config = {
-            'host': os.getenv('DB_HOST'),
-            'user': os.getenv('DB_USER'),
-            'password': os.getenv('DB_PASSWORD'),
-            'database': os.getenv('DB_NAME'),
-            'port': int(os.getenv('DB_PORT')),
-            'connect_timeout': 60,
-            'auth_plugin': 'mysql_native_password',
-            'ssl_disabled': True,
-            'allow_local_infile': True,
-            'consume_results': True,
-            'raise_on_warnings': True,
-            'buffered': True
-        }
-        
-        app.logger.info(f"Attempting database connection to {db_config['host']}:{db_config['port']}")
-        conn = mysql.connector.connect(**db_config)
-        
-        # Configure connection
-        conn.autocommit = False
-        conn.ping(reconnect=True, attempts=3, delay=5)
+        conn = mysql.connector.connect(
+            host=os.getenv('DB_HOST', 'localhost'),
+            user=os.getenv('DB_USER', 'root'),
+            password=os.getenv('DB_PASSWORD', 'projectjam@123'),
+            database=os.getenv('DB_NAME', 'rural_job_portal'),
+            port=int(os.getenv('DB_PORT', 3306))
+        )
         yield conn
-        
     except mysql.connector.Error as e:
-        app.logger.error(f"Database connection failed: {str(e)}")
-        if conn and conn.is_connected():
-            conn.rollback()
+        app.logger.error(f"Database connection failed: {e}")
         raise
     finally:
-        if conn and conn.is_connected():
+        if conn is not None and conn.is_connected():
             conn.close()
-            app.logger.info("Database connection closed")
-
-# ...existing code...
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -892,59 +862,36 @@ def drop_indexes():
     except Exception as e:
         return f"Error dropping indexes: {str(e)}"
 
-# Add health check endpoint
-@app.route('/db-test')
-def test_db():
-    try:
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute('SELECT 1')
-            result = cursor.fetchone()
-            cursor.close()
-            return jsonify({
-                'status': 'success',
-                'message': 'Database connection successful',
-                'db_host': os.getenv('DB_HOST'),
-                'db_name': os.getenv('DB_NAME')
-            })
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e),
-            'db_host': os.getenv('DB_HOST'),
-            'db_name': os.getenv('DB_NAME')
-        }), 500
-
 # Configure logging
-if not os.path.exists('logs'):
-    os.makedirs('logs')
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s: %(message)s',
-    handlers=[
-        logging.FileHandler('logs/app.log'),
-        logging.StreamHandler()
-    ]
-)
+if not app.debug:
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    file_handler = RotatingFileHandler('logs/rural_jobs.log', maxBytes=10240, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('Rural Jobs startup')
 
 app.jinja_env.filters['escapejs'] = escape
 
-# Enhanced error handling
 @app.errorhandler(404)
 def not_found_error(error):
-    app.logger.error(f'Page not found: {request.url}')
     return render_template('errors/404.html'), 404
 
 @app.errorhandler(500)
 def internal_error(error):
-    app.logger.error(f'Server Error: {error}')
-    db = None
     try:
-        if 'db' in g:
-            g.db.rollback()
+        db = get_db_connection()
+        db.rollback()
+        db.close()
     except Exception as e:
-        app.logger.error(f'Error rolling back db: {e}')
+        app.logger.error(f"Error handling 500 error: {str(e)}")
+    
+    app.logger.error('Server Error: %s', str(error))
+    app.logger.error(traceback.format_exc())
     return render_template('errors/500.html'), 500
 
 if __name__ == '__main__':
