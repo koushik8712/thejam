@@ -58,11 +58,11 @@ def get_db_connection():
     try:
         # Get database configuration with proper defaults
         db_config = {
-            'host': os.getenv('DB_HOST'),
-            'user': os.getenv('DB_USER'),
+            'host': os.getenv('DB_HOST', 'mysql.railway.internal'),
+            'user': os.getenv('DB_USER', 'root'),
             'password': os.getenv('DB_PASSWORD'),
-            'database': os.getenv('DB_NAME'),
-            'port': int(os.getenv('DB_PORT')),
+            'database': os.getenv('DB_NAME', 'railway'),
+            'port': int(os.getenv('DB_PORT', '3306')),  # Default port as string
             'connect_timeout': 60,
             'auth_plugin': 'mysql_native_password',
             'ssl_disabled': True,
@@ -74,6 +74,8 @@ def get_db_connection():
         
         app.logger.info(f"Attempting database connection to {db_config['host']}:{db_config['port']}")
         conn = mysql.connector.connect(**db_config)
+        
+        # Test connection
         conn.ping(reconnect=True, attempts=3, delay=5)
         yield conn
         
