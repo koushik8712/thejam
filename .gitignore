@@ -20,6 +20,16 @@ static/avatars/*
 !static/uploads/.gitkeep
 !static/avatars/.gitkeep
 
+# Keep default avatars
+!static/avatars/female1.jpg
+!static/avatars/female2.jpg
+!static/avatars/female3.jpg
+!static/avatars/female4.jpg
+!static/avatars/male1.jpg 
+!static/avatars/male2.jpg
+!static/avatars/male3.jpg
+!static/avatars/male4.jpg
+
 # IDE
 .vscode/
 .idea/
