@@ -56,27 +56,21 @@ ensure_upload_dirs()
 def get_db_connection():
     conn = None
     try:
-        # Get database configuration with proper defaults
+        # Get database configuration with Railway defaults
         db_config = {
             'host': os.getenv('DB_HOST', 'mysql.railway.internal'),
             'user': os.getenv('DB_USER', 'root'),
-            'password': os.getenv('DB_PASSWORD'),
+            'password': os.getenv('DB_PASSWORD','payBGkxifWTJqncDMjpiYCjKVUzuOxwD'),
             'database': os.getenv('DB_NAME', 'railway'),
-            'port': int(os.getenv('DB_PORT', '3306')),  # Default port as string
-            'connect_timeout': 60,
+            'port': int(os.getenv('DB_PORT', '3306')),
             'auth_plugin': 'mysql_native_password',
-            'ssl_disabled': True,
-            'use_pure': True,
-            'connection_timeout': 60,
-            'allow_local_infile': True,
-            'raise_on_warnings': True
+            'connect_timeout': 30,
+            'charset': 'utf8mb4',
+            'use_pure': True
         }
         
-        app.logger.info(f"Attempting database connection to {db_config['host']}:{db_config['port']}")
+        app.logger.info(f"Attempting database connection with: host={db_config['host']}, user={db_config['user']}, db={db_config['database']}")
         conn = mysql.connector.connect(**db_config)
-        
-        # Test connection
-        conn.ping(reconnect=True, attempts=3, delay=5)
         yield conn
         
     except mysql.connector.Error as e:
