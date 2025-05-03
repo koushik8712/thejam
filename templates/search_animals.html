@@ -124,7 +124,7 @@
 
 <!-- Add modal gallery -->
 <div id="gallery-modal" class="modal">
-    <span id="close-modal" class="close-modal">&times;</span>
+    <span id="close-modal" class="close-modal" onclick="closeGalleryModal()">&times;</span>
     <button id="prev-btn" class="nav-btn prev-btn">&#10094;</button>
     <div class="modal-content">
         <img id="gallery-image" src="">
@@ -441,6 +441,21 @@
         cursor: pointer;
         z-index: 1000;
     }
+
+    .close-modal {
+        position: absolute;
+        top: 15px;
+        right: 25px;
+        color: white;
+        font-size: 35px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 1001; /* Ensure it appears above other elements */
+    }
+
+    .close-modal:hover {
+        color: #ff6b6b; /* Add hover effect for better visibility */
+    }
 </style>
 
 <script>
@@ -558,6 +573,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function closeImageViewer() {
     const modal = document.getElementById('image-viewer');
+    modal.style.display = 'none';
+}
+
+function closeGalleryModal() {
+    const modal = document.getElementById('gallery-modal');
     modal.style.display = 'none';
 }
 </script>
