@@ -133,6 +133,15 @@
     <div id="image-counter" class="image-counter"></div>
 </div>
 
+<div id="image-viewer" class="modal">
+    <span class="close" onclick="closeImageViewer()">&times;</span>
+    <div class="modal-content">
+        <img id="modal-img">
+        <button class="prev" onclick="navigateImage(-1)">&#10094;</button>
+        <button class="next" onclick="navigateImage(1)">&#10095;</button>
+    </div>
+</div>
+
 <style>
     body {
         padding: 0;
@@ -421,6 +430,17 @@
         text-align: center;
         margin-top: 5px;
     }
+
+    .modal .close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
+        cursor: pointer;
+        z-index: 1000;
+    }
 </style>
 
 <script>
@@ -535,5 +555,10 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.body.appendChild(modal);
 });
+
+function closeImageViewer() {
+    const modal = document.getElementById('image-viewer');
+    modal.style.display = 'none';
+}
 </script>
 {% endblock %}
