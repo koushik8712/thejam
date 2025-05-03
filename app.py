@@ -56,20 +56,36 @@ ensure_upload_dirs()
 def get_db_connection():
     conn = None
     try:
-        conn = mysql.connector.connect(
-            host=os.getenv('DB_HOST', 'localhost'),
-            user=os.getenv('DB_USER', 'root'),
-            password=os.getenv('DB_PASSWORD', 'projectjam@123'),
-            database=os.getenv('DB_NAME', 'rural_job_portal'),
-            port=int(os.getenv('DB_PORT', 3306))
-        )
+        # Get database configuration with proper defaults
+        db_config = {
+            'host': os.getenv('DB_HOST'),
+            'user': os.getenv('DB_USER'),
+            'password': os.getenv('DB_PASSWORD'),
+            'database': os.getenv('DB_NAME'),
+            'port': int(os.getenv('DB_PORT')),
+            'connect_timeout': 60,
+            'auth_plugin': 'mysql_native_password',
+            'ssl_disabled': True,
+            'use_pure': True,
+            'connection_timeout': 60,
+            'allow_local_infile': True,
+            'raise_on_warnings': True
+        }
+        
+        app.logger.info(f"Attempting database connection to {db_config['host']}:{db_config['port']}")
+        conn = mysql.connector.connect(**db_config)
+        conn.ping(reconnect=True, attempts=3, delay=5)
         yield conn
+        
     except mysql.connector.Error as e:
-        app.logger.error(f"Database connection failed: {e}")
+        app.logger.error(f"Database connection failed: {str(e)}")
+        if conn and conn.is_connected():
+            conn.rollback()
         raise
     finally:
-        if conn is not None and conn.is_connected():
+        if conn and conn.is_connected():
             conn.close()
+            app.logger.info("Database connection closed")
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
