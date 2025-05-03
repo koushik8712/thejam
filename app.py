@@ -59,7 +59,8 @@ def ensure_upload_dirs():
 
 ensure_upload_dirs()
 
-# Enhanced database connection handling
+// ...existing code...
+
 @contextmanager
 def get_db_connection():
     conn = None
@@ -73,7 +74,11 @@ def get_db_connection():
             'port': int(os.getenv('DB_PORT')),
             'connect_timeout': 60,
             'auth_plugin': 'mysql_native_password',
-            'ssl_disabled': True  # Add this line to disable SSL requirement
+            'ssl_disabled': True,
+            'allow_local_infile': True,
+            'consume_results': True,
+            'raise_on_warnings': True,
+            'buffered': True
         }
         
         app.logger.info(f"Attempting database connection to {db_config['host']}:{db_config['port']}")
@@ -81,6 +86,7 @@ def get_db_connection():
         
         # Configure connection
         conn.autocommit = False
+        conn.ping(reconnect=True, attempts=3, delay=5)
         yield conn
         
     except mysql.connector.Error as e:
@@ -92,6 +98,8 @@ def get_db_connection():
         if conn and conn.is_connected():
             conn.close()
             app.logger.info("Database connection closed")
+
+// ...existing code...
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
