@@ -4,71 +4,75 @@
 
 {% block content %}
 <div class="post-job-container">
-    <h2>📢 {{ get_text('post_job') }}</h2>
-    
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for message in messages %}
+        <p class="success">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <h2>📢 {{ get_text('welcome') }}</h2>
     <nav>
         <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a> |
-        <a href="{{ url_for('search_jobs') }}">{{ get_text('search_jobs') }}</a> |
-        <a href="{{ url_for('saved_jobs') }}">{{ get_text('saved_jobs') }}</a>
+        <a href="{{ url_for('search_jobs') }}">{{ get_text('search jobs') }}</a> |
+        <a href="{{ url_for('saved_jobs') }}">{{ get_text('liked jobs') }}</a>
     </nav>
-
     <form action="{{ url_for('post_job') }}" method="POST">
-        <label for="title">{{ get_text('job_title') }}* <span class="required">*</span></label>
+        <label for="title">{{ get_text('job_title') }}</label>
         <select name="title" id="title" required>
-            <option value="" disabled {% if not form_data %}selected{% endif %}>{{ get_text('select_job') }}</option>
-            {% for title in job_titles %}
-            <option value="{{ title }}" {% if form_data and form_data.title == title %}selected{% endif %}>
-                {{ get_text(title) }}
-            </option>
+            <option value="" disabled selected>{{ get_text('select_job') }}</option>
+            {% for title in job_titles %} 
+            <option value="{{ title }}">{{ get_text(title) }}</option>
             {% endfor %}
         </select>
 
-        <label for="description">{{ get_text('job_description') }}* <span class="required">*</span></label>
-        <textarea name="description" id="description" rows="4" required>{{ form_data.description if form_data else '' }}</textarea>
+        <label for="description">{{ get_text('job_description') }}</label>
+        <textarea name="description" id="description" rows="4" placeholder="{{ get_text('job_description') }}"></textarea>
 
-        <label for="location">{{ get_text('job_location') }}* <span class="required">*</span></label>
-        <input type="text" name="location" id="location" required value="{{ form_data.location if form_data else '' }}">
+        <label for="location">{{ get_text('job_location') }}</label>
+        <input type="text" name="location" id="location" required placeholder="{{ get_text('village_town') }}">
+
+        <label for="village_name">{{ get_text('village_name') }}</label>
+        <input type="text" name="village_name" id="village_name" placeholder="{{ get_text('village_name') }}">
+
+        <label for="mandal_name">{{ get_text('mandal_name') }}</label>
+        <input type="text" name="mandal_name" id="mandal_name" placeholder="{{ get_text('mandal_name') }}">
+
+        <label for="district">{{ get_text('district') }}</label>
+        <input type="text" name="district" id="district" placeholder="{{ get_text('district') }}">
+
+        <label for="pincode">{{ get_text('pincode') }}</label>
+        <input type="text" name="pincode" id="pincode" placeholder="{{ get_text('pincode') }}">
 
         <label for="salary">{{ get_text('salary') }}</label>
-        <input type="text" name="salary" id="salary" value="{{ form_data.salary if form_data else '' }}" placeholder="{{ get_text('salary_optional') }}">
+        <input type="text" name="salary" id="salary" required placeholder="{{ get_text('salary_placeholder') }}">
 
-        <label for="phone_number">{{ get_text('contact_info') }}* <span class="required">*</span></label>
-        <input type="text" name="phone_number" id="phone_number" required pattern="[0-9]{10}" value="{{ form_data.phone_number if form_data else '' }}">
+        <label for="phone_number">{{ get_text('contact_info') }}</label>
+        <input type="text" name="phone_number" id="phone_number" required placeholder="{{ get_text('phone_placeholder') }}">
 
-        <label for="job_type">{{ get_text('job_type') }}* <span class="required">*</span></label>
+        <label for="job_type">{{ get_text('job_type') }}</label>
         <select name="job_type" id="job_type" required>
-            <option value="" disabled {% if not form_data %}selected{% endif %}>{{ get_text('select_job_type') }}</option>
-            <option value="full_time" {% if form_data and form_data.job_type == 'full_time' %}selected{% endif %}>{{ get_text('full_time') }}</option>
-            <option value="part_time" {% if form_data and form_data.job_type == 'part_time' %}selected{% endif %}>{{ get_text('part_time') }}</option>
-            <option value="contract" {% if form_data and form_data.job_type == 'contract' %}selected{% endif %}>{{ get_text('contract') }}</option>
+            <option value="" disabled selected>{{ get_text('select_job_type') }}</option>
+            <option value="full_time">{{ get_text('full_time') }}</option>
+            <option value="part_time">{{ get_text('part_time') }}</option>
+            <option value="contract">{{ get_text('contract') }}</option>
         </select>
 
-        <div class="form-note">
-            <p><span class="required">*</span> {{ get_text('required_fields') }}</p>
-        </div>
-
-        <button type="submit">{{ get_text('post_job') }}</button>
+        <button type="submit">{{ get_text('submit') }}</button>
     </form>
+
+    <script>
+        const locationInput = document.getElementById('location');
+        locationInput.addEventListener('input', () => {
+            const location = locationInput.value.trim();
+            if (location) {
+                console.log(`Location entered: ${location}`);
+            }
+        });
+    </script>
+    <br>
 </div>
-
-<style>
-    .required {
-        color: red;
-    }
-    
-    .form-note {
-        font-size: 0.9em;
-        margin-top: 10px;
-        color: #666;
-    }
-
-    .post-job-container {
-        max-width: 600px;
-        margin: 20px auto;
-        padding: 20px;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-</style>
 {% endblock %}
