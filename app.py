@@ -414,33 +414,31 @@ def post_job():
         return redirect(url_for('home'))
 
     if request.method == 'POST':
+        # Collect form data
         form_data = {
             'title': request.form.get('title', '').strip(),
             'description': request.form.get('description', '').strip(),
             'location': request.form.get('location', '').strip(),
-            'salary': request.form.get('salary', ''),  # Optional
+            'salary': request.form.get('salary', '').strip(),  # Optional
             'phone_number': request.form.get('phone_number', '').strip(),
             'job_type': request.form.get('job_type', '').strip()
         }
-        
-        # Debug log
-        app.logger.info(f"Received job post data: {form_data}")
-        
-        # Validate required fields
-        missing_fields = []
-        if not form_data['title']: missing_fields.append('Job Title')
-        if not form_data['description']: missing_fields.append('Description')
-        if not form_data['location']: missing_fields.append('Location')
-        if not form_data['phone_number']: missing_fields.append('Phone Number')
-        if not form_data['job_type']: missing_fields.append('Job Type')
 
+        # Log the received form data for debugging
+        app.logger.info(f"Received job post data: {form_data}")
+
+        # Validate required fields
+        missing_fields = [field for field in ['title', 'description', 'location', 'phone_number', 'job_type'] if not form_data[field]]
         if missing_fields:
+            app.logger.error(f"Missing fields: {missing_fields}")
             flash(f"Missing required fields: {', '.join(missing_fields)}", "danger")
             return render_template('post_job.html', job_titles=RURAL_JOB_TITLES, form_data=form_data)
 
         try:
             with get_db_connection() as conn:
                 cursor = conn.cursor()
+
+                # Insert the job into the database
                 cursor.execute(
                     """INSERT INTO jobs 
                        (title, description, location, salary, phone_number, job_type, posted_by) 
@@ -450,11 +448,16 @@ def post_job():
                      session['user_id'])
                 )
                 conn.commit()
+
+                # Log success
+                app.logger.info(f"Job posted successfully by user {session['user_id']}")
                 flash("Job posted successfully!", "success")
                 return redirect(url_for('search_jobs'))
+
         except Exception as e:
+            # Log the error for debugging
             app.logger.error(f"Error posting job: {str(e)}")
-            flash("An error occurred while posting the job", "danger")
+            flash("An error occurred while posting the job. Please try again.", "danger")
             return render_template('post_job.html', job_titles=RURAL_JOB_TITLES, form_data=form_data)
 
     return render_template('post_job.html', job_titles=RURAL_JOB_TITLES)
