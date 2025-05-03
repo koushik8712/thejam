@@ -56,20 +56,18 @@ ensure_upload_dirs()
 def get_db_connection():
     conn = None
     try:
-        # Get database configuration with Railway defaults
+        # Get database configuration with proper defaults
         db_config = {
-            'host': os.getenv('DB_HOST', 'mysql.railway.internal'),
+            'host': os.getenv('DB_HOST', 'crossover.proxy.rlwy.net'),  # Use public hostname
             'user': os.getenv('DB_USER', 'root'),
-            'password': os.getenv('DB_PASSWORD','payBGkxifWTJqncDMjpiYCjKVUzuOxwD'),
+            'password': os.getenv('DB_PASSWORD'),
             'database': os.getenv('DB_NAME', 'railway'),
-            'port': int(os.getenv('DB_PORT', '3306')),
+            'port': int(os.getenv('DB_PORT', '57945')),  # Use public port
             'auth_plugin': 'mysql_native_password',
-            'connect_timeout': 30,
-            'charset': 'utf8mb4',
-            'use_pure': True
+            'connect_timeout': 30
         }
         
-        app.logger.info(f"Attempting database connection with: host={db_config['host']}, user={db_config['user']}, db={db_config['database']}")
+        app.logger.info(f"Attempting database connection with: host={db_config['host']}, user={db_config['user']}, port={db_config['port']}")
         conn = mysql.connector.connect(**db_config)
         yield conn
         
