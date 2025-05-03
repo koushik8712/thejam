@@ -151,10 +151,11 @@ def login():
                 if user and bcrypt.checkpw(password.encode(), user['password'].encode()):
                     session['user_id'] = user['id']
                     session['username'] = user['username']
-                    return redirect(url_for('dashboard'))
+                    flash("Login successful!", "success")
+                    return redirect(url_for('dashboard'))  # Redirect to dashboard
                 else:
                     flash("Incorrect Password or Username/Phone", "danger")
-                    return redirect(url_for('home'))
+                    return redirect(url_for('home'))  # Redirect to login page
 
         except mysql.connector.Error as e:
             app.logger.error(f"Database error during login: {e}")
@@ -325,8 +326,8 @@ def register():
                          profile_picture)
                     )
                     conn.commit()
-                    flash("Registration successful!", "success")
-                    return redirect(url_for('home'))
+                    flash("Registration successful! Please log in.", "success")
+                    return redirect(url_for('home'))  # Redirect to login page
 
                 except Exception as e:
                     conn.rollback()
@@ -411,7 +412,7 @@ def edit_profile():
 def post_job():
     if 'user_id' not in session:
         flash("You must be logged in to post a job.", "warning")
-        return redirect(url_for('home'))
+        return redirect(url_for('home'))  # Redirect to login page
 
     if request.method == 'POST':
         # Collect form data
@@ -452,7 +453,7 @@ def post_job():
                 # Log success
                 app.logger.info(f"Job posted successfully by user {session['user_id']}")
                 flash("Job posted successfully!", "success")
-                return redirect(url_for('search_jobs'))
+                return redirect(url_for('post_job'))  # Stay on the post job page
 
         except Exception as e:
             # Log the error for debugging
@@ -542,7 +543,7 @@ def search_jobs():
 def post_animal():
     if 'user_id' not in session:
         flash("You must be logged in to post an animal.", "warning")
-        return redirect(url_for('home'))
+        return redirect(url_for('home'))  # Redirect to login page
 
     if request.method == 'POST':
         category = request.form.get('animal_category')
@@ -561,7 +562,7 @@ def post_animal():
 
         if not all([animal_name, weight, price, location, contact_number]):
             flash("Please fill in all required fields!", "danger")
-            return redirect(url_for('post_animal'))
+            return render_template('post_animal.html')  # Stay on the post animal page
 
         photo_filenames = []
         for photo in photos:
@@ -570,20 +571,26 @@ def post_animal():
                 photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 photo_filenames.append(filename)
 
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """INSERT INTO animals (category, age, breed, weight, cost, description, 
-                   location, contact_number, photos, posted_by)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                (animal_name, age, breed, weight, price, description, location, 
-                 contact_number, ','.join(photo_filenames), session.get('user_id'))
-            )
-            conn.commit()
-            cursor.close()
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """INSERT INTO animals (category, age, breed, weight, cost, description, 
+                       location, contact_number, photos, posted_by)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                    (animal_name, age, breed, weight, price, description, location, 
+                     contact_number, ','.join(photo_filenames), session.get('user_id'))
+                )
+                conn.commit()
+                cursor.close()
 
-        flash("Animal posted successfully!", "success")
-        return redirect(url_for('search_animals'))
+            flash("Animal posted successfully!", "success")
+            return redirect(url_for('post_animal'))  # Stay on the post animal page
+
+        except Exception as e:
+            app.logger.error(f"Error posting animal: {str(e)}")
+            flash("An error occurred while posting the animal. Please try again.", "danger")
+            return render_template('post_animal.html')
 
     return render_template('post_animal.html')
 
@@ -653,7 +660,8 @@ def search_animals():
 @app.route('/save_animal/<int:animal_id>', methods=['POST'])
 def save_animal(animal_id):
     if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Please log in first'})
+        flash("Please log in first.", "warning")
+        return jsonify({'success': False, 'message': 'Please log in first'})  # Return JSON response
 
     user_id = session['user_id']
     try:
@@ -735,10 +743,11 @@ def forgot_password():
                 
               
                 flash(f"Reset token: {reset_token}", "info")
-                return redirect(url_for('reset_password', token=reset_token))
+                return redirect(url_for('home'))  # Redirect to login page
             
-            flash("No account found with that username/phone number", "error")
+            flash("No account found with that username/phone number", "danger")
             cursor.close()
+            return redirect(url_for('forgot_password'))  # Stay on forgot password page
         
     return render_template('forgot_password.html')
 
@@ -781,11 +790,11 @@ def reset_password(token):
                 conn.commit()
                 
                 flash(f"Password reset successful! You can now login with your new password", "success")
-                return redirect(url_for('login'))
+                return redirect(url_for('home'))  # Redirect to login page
             else:
-                flash("Invalid or expired reset token", "error")
+                flash("Invalid or expired reset token", "danger")
                 cursor.close()
-                return redirect(url_for('forgot_password'))
+                return redirect(url_for('forgot_password'))  # Redirect to forgot password page
 
     # GET request - show reset form        
     return render_template('reset_password.html', token=token)
@@ -794,12 +803,13 @@ def reset_password(token):
 def logout():
     session.clear()
     flash("Logged out successfully!", "info")
-    return redirect(url_for('home'))
+    return redirect(url_for('home'))  # Redirect to login page
 
 @app.route('/save_job/<int:job_id>', methods=['POST'])
 def save_job(job_id):
     if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Please log in first'})
+        flash("Please log in first.", "warning")
+        return jsonify({'success': False, 'message': 'Please log in first'})  # Return JSON response
 
     user_id = session['user_id']
     try:
