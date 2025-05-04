@@ -79,7 +79,7 @@
 
             <label>{{ get_text('upload_avatar') }}</label>
             <input type="file" name="avatar_file" id="avatar_file" accept="image/*" onchange="previewImage(event)">
-            <img id="custom-preview" class="preview-image" alt="{{ get_text('uploaded_preview') }}">
+            <img id="custom-preview" class="preview-image" alt="{{ get_text('uploaded preview') }}">
 
             <button type="submit">{{ get_text('submit') }}</button>
             <p class="register-link">{{ get_text('have_account') }} <a href="{{ url_for('home') }}">{{ get_text('login') }}</a></p>

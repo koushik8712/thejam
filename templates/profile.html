@@ -11,10 +11,10 @@
 
         <div class="profile-details">
             <p><strong>{{ get_text('username') }}:</strong> {{ user['username'] }}</p>
-            <p><strong>{{ get_text('phone_number') }}:</strong> {{ user['phone_number'] }}</p>
-            <p><strong>{{ get_text('gender') }}:</strong> {{ user['gender'] if user['gender'] else get_text('not_specified') }}</p>
+            <p><strong>{{ get_text('phone number') }}:</strong> {{ user['phone_number'] }}</p>
+            <p><strong>{{ get_text('gender') }}:</strong> {{ user['gender'] if user['gender'] else get_text('not specified') }}</p>
             <p><strong>{{ get_text('bio') }}:</strong> {{ user['bio'] if user['bio'] else get_text('no_bio') }}</p>
-            <p><strong>{{ get_text('location') }}:</strong> {{ user['location'] if user['location'] else get_text('no_location') }}</p>
+            <p><strong>{{ get_text('location') }}:</strong> {{ user['location'] if user['location'] else get_text('no location') }}</p>
         </div>
 
         <div class="profile-image">
@@ -30,7 +30,7 @@
         </div>
 
         <a href="{{ url_for('dashboard') }}" class="back-link">
-            <button class="action-btn">{{ get_text('back_to_dashboard') }}</button>
+            <button class="action-btn">{{ get_text('back to dashboard') }}</button>
         </a>
 
         <a href="{{ url_for('logout') }}" class="logout-link">

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ get_text('post_job') }}{% endblock %}
+{% block title %}{{ get_text('post job') }}{% endblock %}
 
 {% block content %}
 <div class="post-job-container">
@@ -16,7 +16,7 @@
 
     <h2>📢 {{ get_text('welcome') }}</h2>
     <nav>
-        <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a> |
+        <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
         <a href="{{ url_for('search_jobs') }}">{{ get_text('search jobs') }}</a> |
         <a href="{{ url_for('saved_jobs') }}">{{ get_text('liked jobs') }}</a>
     </nav>
@@ -30,16 +30,16 @@
         </select>
 
         <label for="description">{{ get_text('job_description') }}</label>
-        <textarea name="description" id="description" rows="4" placeholder="{{ get_text('job_description') }}"></textarea>
+        <textarea name="description" id="description" rows="4" placeholder="{{ get_text('job description') }}"></textarea>
 
         <label for="location">{{ get_text('job_location') }}</label>
-        <input type="text" name="location" id="location" required placeholder="{{ get_text('village_town') }}">
+        <input type="text" name="location" id="location" required placeholder="{{ get_text('village town') }}">
 
         <label for="village_name">{{ get_text('village_name') }}</label>
-        <input type="text" name="village_name" id="village_name" placeholder="{{ get_text('village_name') }}">
+        <input type="text" name="village_name" id="village_name" placeholder="{{ get_text('village name') }}">
 
         <label for="mandal_name">{{ get_text('mandal_name') }}</label>
-        <input type="text" name="mandal_name" id="mandal_name" placeholder="{{ get_text('mandal_name') }}">
+        <input type="text" name="mandal_name" id="mandal_name" placeholder="{{ get_text('mandal name') }}">
 
         <label for="district">{{ get_text('district') }}</label>
         <input type="text" name="district" id="district" placeholder="{{ get_text('district') }}">
@@ -48,16 +48,16 @@
         <input type="text" name="pincode" id="pincode" placeholder="{{ get_text('pincode') }}">
 
         <label for="salary">{{ get_text('salary') }}</label>
-        <input type="text" name="salary" id="salary" required placeholder="{{ get_text('salary_placeholder') }}">
+        <input type="text" name="salary" id="salary" required placeholder="{{ get_text('') }}">
 
         <label for="phone_number">{{ get_text('contact_info') }}</label>
-        <input type="text" name="phone_number" id="phone_number" required placeholder="{{ get_text('phone_placeholder') }}">
+        <input type="text" name="phone_number" id="phone_number" required placeholder="{{ get_text('r') }}">
 
         <label for="job_type">{{ get_text('job_type') }}</label>
         <select name="job_type" id="job_type" required>
-            <option value="" disabled selected>{{ get_text('select_job_type') }}</option>
-            <option value="full_time">{{ get_text('full_time') }}</option>
-            <option value="part_time">{{ get_text('part_time') }}</option>
+            <option value="" disabled selected>{{ get_text('select job type') }}</option>
+            <option value="full_time">{{ get_text('fullctime') }}</option>
+            <option value="part_time">{{ get_text('part time') }}</option>
             <option value="contract">{{ get_text('contract') }}</option>
         </select>
 

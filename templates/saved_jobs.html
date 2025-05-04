@@ -30,9 +30,9 @@
                         <p><strong>{{ get_text('saved_on') }}:</strong> {{ job.saved_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
                     </div>
                     <div class="job-card-actions">
-                        <a href="https://www.google.com/maps/search/?api=1&query={{ job.location }}, {{ job.village_name }}, {{ job.mandal_name }}, {{ job.district }}, {{ job.pincode }}" target="_blank">{{ get_text('view_on_map') }}</a>
-                        <a href="https://wa.me/+91{{ job.phone_number }}?text={{ get_text('hello_interested_in_job') }} {{ job.title }}" target="_blank">{{ get_text('contact_on_whatsapp') }}</a>
-                        <a href="sms:+91{{ job.phone_number }}?body={{ get_text('hello_interested_in_job') }} {{ job.title }}">{{ get_text('contact_via_sms') }}</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ job.location }}, {{ job.village_name }}, {{ job.mandal_name }}, {{ job.district }}, {{ job.pincode }}" target="_blank">{{ get_text('view on map') }}</a>
+                        <a href="https://wa.me/+91{{ job.phone_number }}?text={{ get_text('hello interested in job') }} {{ job.title }}" target="_blank">{{ get_text('contact on whatsapp') }}</a>
+                        <a href="sms:+91{{ job.phone_number }}?body={{ get_text('hello_interested_in_job') }} {{ job.title }}">{{ get_text('contact via sms') }}</a>
                         <label class="ui-bookmark">
                             <input type="checkbox" data-job-id="{{ job.id }}" checked>
                             <div class="bookmark">
@@ -54,7 +54,7 @@
             {% endfor %}
         </div>
     {% else %}
-        <p>{{ get_text('no_jobs_found') }}</p>
+        <p>{{ get_text('no jobs found,save some to appear') }}</p>
     {% endif %}
 </div>
 

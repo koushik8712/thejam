@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ get_text('search_animals') }}{% endblock %}
+{% block title %}{{ get_text('search animals') }}{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -36,17 +36,17 @@
                 <select name="sort_price" id="sort_price">
                     <option value="">{{ get_text('select_sort') }}</option>
                     <option value="high_to_low" {% if sort_price == 'high_to_low' %}selected{% endif %}>
-                        {{ get_text('high_to_low_price') }}
+                        {{ get_text('high to low_price') }}
                     </option>
                     <option value="low_to_high" {% if sort_price == 'low_to_high' %}selected{% endif %}>
-                        {{ get_text('low_to_high_price') }}
+                        {{ get_text('low to high price') }}
                     </option>
                 </select>
             </div>
 
             <div id="categoryFilter" style="display: {% if filter_by == 'category' %}block{% else %}none{% endif %};">
                 <select name="category" id="category">
-                    <option value="">{{ get_text('select_category') }}</option>
+                    <option value="">{{ get_text('select category') }}</option>
                     <option value="cows" {% if category == 'cows' %}selected{% endif %}>
                         {{ get_text('cows') }}
                     </option>
@@ -64,12 +64,12 @@
 
             <div id="locationFilter" style="display: {% if filter_by == 'location' %}block{% else %}none{% endif %};">
                 <input type="text" name="location" id="location" 
-                       value="{{ location }}" placeholder="{{ get_text('enter_location') }}">
+                       value="{{ location }}" placeholder="{{ get_text('enter location') }}">
             </div>
 
             <button type="submit">{{ get_text('apply_filters') }}</button>
             <a href="{{ url_for('search_animals') }}" class="reset-button">
-                {{ get_text('reset_search') }}
+                {{ get_text('reset search') }}
             </a>
         </form>
     </div>
@@ -85,7 +85,7 @@
                         {% if animal.photos.split(',')|length > 1 %}
                             <span class="more-photos">+{{ animal.photos.split(',')|length - 1 }}</span>
                         {% endif %}
-                        <p class="tap-note">{{ get_text('tap_photo_to_view') }}</p>
+                        <p class="tap-note">{{ get_text('tap photo to view') }}</p>
                     </div>
                     <h3>{{ animal.category }}{% if animal.breed %} - {{ animal.breed }}{% endif %}</h3>
                     <p><strong>{{ get_text('price') }}:</strong> ₹{{ animal.cost }}</p>
@@ -103,10 +103,10 @@
                 </div>
                 
                 <div class="job-card-actions">
-                    <a href="https://wa.me/+91{{ animal.contact_number }}?text={{ get_text('interested_in_animal') }} {{ animal.category }}" 
+                    <a href="https://wa.me/+91{{ animal.contact_number }}?text={{ get_text('interested in animal') }} {{ animal.category }}" 
                        target="_blank">{{ get_text('contact_on_whatsapp') }}</a>
-                    <a href="sms:+91{{ animal.contact_number }}?body={{ get_text('interested_in_animal') }} {{ animal.category }}">
-                        {{ get_text('contact_via_sms') }}</a>
+                    <a href="sms:+91{{ animal.contact_number }}?body={{ get_text('interested in animal') }} {{ animal.category }}">
+                        {{ get_text('contact via sms') }}</a>
                     <label class="ui-bookmark">
                         <input type="checkbox" data-animal-id="{{ animal.id }}" 
                                {% if animal.id in saved_animals %}checked{% endif %}>

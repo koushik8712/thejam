@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}{{ get_text('edit_profile') }}{% endblock %}
+{% block title %}{{ get_text('edit profile') }}{% endblock %}
 
 {% block content %}
     <div class="register-container">
         <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a>
 
-        <h1>{{ get_text('edit_profile') }}</h1>
-        <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data">
-            <label>{{ get_text('full_name') }}:</label>
+        <h1>{{ get_text('edit profile') }}</h1>
+        <form action="{{ url_for('edit profile') }}" method="POST" enctype="multipart/form-data">
+            <label>{{ get_text('full name') }}:</label>
             <input type="text" name="full_name" value="{{ user['full_name'] }}" required>
 
-            <label>{{ get_text('phone_number') }}:</label>
+            <label>{{ get_text('phone number') }}:</label>
             <input type="text" name="phone_number" value="{{ user['phone_number'] }}" required>
 
             <label>{{ get_text('gender') }}:</label>
@@ -48,7 +48,7 @@
             <label>{{ get_text('location') }}:</label>
             <input type="text" name="location" value="{{ user['location'] }}">
 
-            <label>{{ get_text('choose_new_avatar') }}:</label>
+            <label>{{ get_text('choose new avatar') }}:</label>
             <div class="avatar-container">
                 {% for avatar in avatars %}
                 <div class="avatar-option" onclick="selectAvatar('{{ avatar }}', this)">
@@ -58,15 +58,15 @@
             </div>
             <input type="hidden" name="avatar_choice" id="avatar_choice">
 
-            <label>{{ get_text('upload_new_picture') }}:</label>
+            <label>{{ get_text('upload new picture') }}:</label>
             <input type="file" name="avatar_file" id="avatar_file" accept="image/*" onchange="previewImage(event)">
-            <img id="custom-preview" class="preview-image" alt="{{ get_text('uploaded_preview') }}">
+            <img id="custom-preview" class="preview-image" alt="{{ get_text('uploaded preview') }}">
 
-            <button type="submit">{{ get_text('save_changes') }}</button>
+            <button type="submit">{{ get_text('save changes') }}</button>
         </form>
         <h4>
         </h4>
-        <a href="{{ url_for('profile') }}">{{ get_text('back_to_profile') }}</a>
+        <a href="{{ url_for('profile') }}">{{ get_text('back to profile') }}</a>
     </div>
 
     <script>
