@@ -123,5 +123,10 @@
     "price_per_quintal": "मूल्य प्रति क्विंटल (₹)",
     "filter_commodities": "वस्तुएं फ़िल्टर करें",
     "source_agmarknet": "डेटा Agmarknet द्वारा प्रदान किया गया",
-    "tap_photo_to_view": "फोटो देखने के लिए टैप करें"
+    "tap_photo_to_view": "फोटो देखने के लिए टैप करें",
+    "contact_number": "संपर्क नंबर",
+    "specify_animal": "पशु निर्दिष्ट करें",
+    "enter_animal_name": "पशु का नाम दर्ज करें",
+    "max_4_photos": "अधिकतम 4 तस्वीरें",
+    "price": "मूल्य"
 }
