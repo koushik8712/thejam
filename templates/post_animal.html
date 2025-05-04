@@ -29,12 +29,12 @@
             </div>
 
             <div class="form-group" id="other-animal-group" style="display: none;">
-                <label for="other_animal">{{ get_text('specify_animal') }}*</label>
+                <label for="other_animal">{{ get_text('specify animal') }}</label>
                 <input type="text" id="other_animal" name="other_animal" placeholder="{{ get_text('enter animal name') }}">
             </div>
 
             <div class="form-group image-upload-section">
-                <label>{{ get_text('upload_photos') }}* ({{ get_text('max 4 photos') }})</label>
+                <label>{{ get_text('upload_photos') }} ({{ get_text('max 4 photos') }})</label>
                 <div class="image-preview-container" id="preview-container">
                     <div class="upload-box" onclick="document.getElementById('photo-input').click()">
                         <span>+</span>
@@ -55,27 +55,27 @@
             </div>
 
             <div class="form-group">
-                <label for="animal_weight">{{ get_text('weight') }}* (kg)</label>
+                <label for="animal_weight">{{ get_text('weight') }}(kg)</label>
                 <input type="number" id="animal_weight" name="animal_weight" required min="0">
             </div>
 
             <div class="form-group">
-                <label for="animal_cost">{{ get_text('price') }}*</label>
+                <label for="animal_cost">{{ get_text('price') }}</label>
                 <input type="number" id="animal_cost" name="animal_cost" required min="0">
             </div>
 
             <div class="form-group">
-                <label for="animal_location">{{ get_text('location') }}*</label>
+                <label for="animal_location">{{ get_text('location') }}</label>
                 <input type="text" id="animal_location" name="animal_location" required>
             </div>
             
             <div class="form-group">
-                <label for="village_name">{{ get_text('village_name') }}</label>
+                <label for="village_name">{{ get_text('village name') }}</label>
                 <input type="text" id="village_name" name="village_name" placeholder="{{ get_text('') }}">
             </div>
             
             <div class="form-group">
-                <label for="mandal_name">{{ get_text('mandal_name') }}</label>
+                <label for="mandal_name">{{ get_text('mandal name') }}</label>
                 <input type="text" id="mandal_name" name="mandal_name" placeholder="{{ get_text('') }}">
             </div>
             
@@ -86,7 +86,7 @@
             
             <div class="form-group">
                 <label for="pincode">{{ get_text('pincode') }}</label>
-                <input type="text" id="pincode" name="pincode" placeholder="{{ get_text('pincode') }}">
+                <input type="text" id="pincode" name="pincode" placeholder="{{ get_text('') }}">
             </div>
             
                         <div class="form-group">
@@ -101,7 +101,6 @@
     </div>
 </div>
 
-<!-- Image Preview Modal -->
 <div id="preview-modal" class="modal">
     <span class="close">&times;</span>
     <div class="modal-content">
@@ -314,7 +313,6 @@ function handleImageUpload(event) {
     const files = Array.from(event.target.files);
     const previewContainer = document.getElementById('preview-container');
 
-    // Clear existing previews
     previewContainer.querySelectorAll('.preview-wrapper').forEach(wrapper => wrapper.remove());
 
     files.forEach(file => {
@@ -323,7 +321,6 @@ function handleImageUpload(event) {
             reader.onload = function(e) {
                 const imageUrl = e.target.result;
 
-                // Create preview wrapper
                 const wrapper = document.createElement('div');
                 wrapper.className = 'preview-wrapper';
 
@@ -332,7 +329,6 @@ function handleImageUpload(event) {
                 img.src = imageUrl;
                 img.className = 'preview-image';
 
-                // Add remove button
                 const removeBtn = document.createElement('div');
                 removeBtn.className = 'remove-image';
                 removeBtn.innerHTML = '×';
@@ -340,7 +336,6 @@ function handleImageUpload(event) {
                     wrapper.remove();
                 };
 
-                // Append elements
                 wrapper.appendChild(img);
                 wrapper.appendChild(removeBtn);
                 previewContainer.appendChild(wrapper);
@@ -375,7 +370,6 @@ function addImagePreview(src, file) {
     wrapper.appendChild(removeBtn);
     container.appendChild(wrapper);
 
-    // Add loading animation
     img.style.opacity = '0';
     setTimeout(() => {
         img.style.transition = 'opacity 0.3s ease';

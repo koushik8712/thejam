@@ -14,7 +14,6 @@ def init_database():
         'auth_plugin': 'mysql_native_password'
     }
 
-    # SQL statements to create tables
     tables = [
         """
         CREATE TABLE IF NOT EXISTS users (

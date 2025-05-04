@@ -1,4 +1,3 @@
--- Create users table first as it's referenced by other tables
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -12,7 +11,6 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create jobs table
 CREATE TABLE jobs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
@@ -26,7 +24,6 @@ CREATE TABLE jobs (
     FOREIGN KEY (posted_by) REFERENCES users(id)
 );
 
--- Create animals table
 CREATE TABLE animals (
     id INT AUTO_INCREMENT PRIMARY KEY,
     category VARCHAR(50) NOT NULL,
@@ -43,7 +40,6 @@ CREATE TABLE animals (
     FOREIGN KEY (posted_by) REFERENCES users(id)
 );
 
--- Create bookmarks table for jobs
 CREATE TABLE bookmarks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -54,7 +50,6 @@ CREATE TABLE bookmarks (
     UNIQUE KEY unique_bookmark (user_id, job_id)
 );
 
--- Create animal_bookmarks table
 CREATE TABLE animal_bookmarks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -65,7 +60,6 @@ CREATE TABLE animal_bookmarks (
     UNIQUE KEY unique_animal_bookmark (user_id, animal_id)
 );
 
--- Create OTP verification table
 CREATE TABLE otp_verifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     phone_number VARCHAR(15) NOT NULL,
@@ -75,7 +69,6 @@ CREATE TABLE otp_verifications (
     is_used BOOLEAN DEFAULT FALSE
 );
 
--- Create password reset table
 CREATE TABLE password_resets (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,

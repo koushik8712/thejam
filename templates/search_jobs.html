@@ -83,18 +83,18 @@
 
         .ui-bookmark .bookmark {
             font-size: 20px;
-            color: #ccc;  /* Start with gray color */
+            color: #ccc;  
             transition: all 0.3s;
             transform-origin: center;
         }
 
         .ui-bookmark .bookmark svg {
-            fill: #ccc; /* Default gray color */
+            fill: #ccc;
             transition: fill 0.3s ease, transform 0.3s ease;
         }
 
         .ui-bookmark input:checked + .bookmark svg {
-            fill: #ff6b6b; /* Pink color when checked */
+            fill: #ff6b6b;
             animation: heart-burst 0.45s cubic-bezier(0.17, 0.89, 0.32, 1.49);
         }
 
@@ -318,7 +318,6 @@
             input.addEventListener('change', function(e) {
                 e.preventDefault();
                 
-                // Disable the input while processing
                 this.disabled = true;
                 
                 fetch(`/save_job/${jobId}`, {
@@ -333,7 +332,6 @@
                 .then(data => {
                     if (data.success) {
                         this.checked = data.saved;
-                        // Add animation class
                         if (data.saved) {
                             label.classList.add('liked');
                         } else {
@@ -352,7 +350,6 @@
                     alert('Failed to save job. Please try again.');
                 })
                 .finally(() => {
-                    // Re-enable the input
                     this.disabled = false;
                 });
             });

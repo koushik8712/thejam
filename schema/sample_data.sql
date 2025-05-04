@@ -1,4 +1,3 @@
--- Add a test job posting
 INSERT INTO jobs (
     title, 
     description, 
@@ -14,10 +13,8 @@ INSERT INTO jobs (
     '15000',
     '1234567890',
     'full_time',
-    1  -- Posted by our test user
-);
+    1 
 
--- Add a test animal listing
 INSERT INTO animals (
     category,
     age,
@@ -39,5 +36,5 @@ INSERT INTO animals (
     'Local Farm',
     '1234567890',
     'default.jpg',
-    1  -- Posted by our test user
+    1 
 );

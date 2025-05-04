@@ -1,10 +1,7 @@
--- Select the database
 USE railway;
 
--- Disable foreign key checks temporarily
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Drop existing tables to avoid conflicts
 DROP TABLE IF EXISTS bookmarks;
 DROP TABLE IF EXISTS animal_bookmarks;
 DROP TABLE IF EXISTS chat_messages;
@@ -15,7 +12,6 @@ DROP TABLE IF EXISTS animals;
 DROP TABLE IF EXISTS jobs;
 DROP TABLE IF EXISTS users;
 
--- Create users table first (as it's referenced by others)
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -29,7 +25,6 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create jobs table
 CREATE TABLE jobs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
@@ -43,7 +38,6 @@ CREATE TABLE jobs (
     FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create animals table
 CREATE TABLE animals (
     id INT AUTO_INCREMENT PRIMARY KEY,
     category VARCHAR(100) NOT NULL,
@@ -60,7 +54,6 @@ CREATE TABLE animals (
     FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create bookmarks table
 CREATE TABLE bookmarks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -71,7 +64,6 @@ CREATE TABLE bookmarks (
     UNIQUE KEY unique_bookmark (user_id, job_id)
 );
 
--- Create animal_bookmarks table
 CREATE TABLE animal_bookmarks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -82,7 +74,6 @@ CREATE TABLE animal_bookmarks (
     UNIQUE KEY unique_animal_bookmark (user_id, animal_id)
 );
 
--- Create chat_messages table
 CREATE TABLE chat_messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT NOT NULL,
@@ -95,7 +86,6 @@ CREATE TABLE chat_messages (
     FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
 
--- Create password_resets table
 CREATE TABLE password_resets (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -106,7 +96,6 @@ CREATE TABLE password_resets (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create OTP verifications table
 CREATE TABLE otp_verifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     phone_number VARCHAR(15) NOT NULL,
@@ -116,7 +105,6 @@ CREATE TABLE otp_verifications (
     is_used BOOLEAN DEFAULT FALSE
 );
 
--- Create local_prices table
 CREATE TABLE local_prices (
     id INT AUTO_INCREMENT PRIMARY KEY,
     commodity VARCHAR(100) NOT NULL,
@@ -128,8 +116,6 @@ CREATE TABLE local_prices (
     FOREIGN KEY (submitted_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create indexes
 CREATE INDEX idx_animal_created ON animals(created_at);
 
--- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

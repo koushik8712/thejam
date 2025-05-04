@@ -18,13 +18,11 @@ from contextlib import contextmanager
 from markupsafe import escape
 
 
-# Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
-app.config['DEBUG'] = True  # Set back to True for local development
+app.config['DEBUG'] = True 
 
-# Use environment variables for sensitive data
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 
 UPLOAD_FOLDER = 'static/uploads/'
@@ -56,7 +54,6 @@ ensure_upload_dirs()
 def get_db_connection():
     conn = None
     try:
-        # Get database configuration with proper defaults and explicit password
         db_config = {
             'host': os.getenv('DB_HOST', 'mysql.railway.internal'),
             'user': os.getenv('DB_USER', 'root'),
@@ -70,7 +67,6 @@ def get_db_connection():
             'raise_on_warnings': True
         }
         
-        # Log connection attempt without exposing password
         app.logger.info(f"Attempting database connection to {db_config['host']}:{db_config['port']} as {db_config['user']}")
         
         if not db_config['password']:
@@ -175,14 +171,12 @@ def send_otp():
         flash('Please enter a valid 10-digit phone number', 'error')
         return redirect(url_for('login_with_otp'))
 
-    # Generate 6-digit OTP
     otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
     expires_at = datetime.now() + timedelta(minutes=10)
 
     with get_db_connection() as conn:
         cursor = conn.cursor()
 
-        # Store OTP in database
         cursor.execute(
             "INSERT INTO otp_verifications (phone_number, otp, expires_at) VALUES (%s, %s, %s)",
             (phone_number, otp, expires_at)
@@ -190,7 +184,6 @@ def send_otp():
         conn.commit()
         cursor.close()
 
-    # For testing, show OTP (in production, send via SMS)
     flash(f'Your OTP is: {otp}', 'info')
     return render_template('login_with_otp.html', show_otp_form=True)
 
@@ -202,7 +195,6 @@ def verify_otp():
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
 
-        # Verify OTP
         cursor.execute(
             """SELECT * FROM otp_verifications 
                WHERE phone_number = %s 
@@ -215,13 +207,11 @@ def verify_otp():
         verification = cursor.fetchone()
 
         if verification:
-            # Mark OTP as used
             cursor.execute(
                 "UPDATE otp_verifications SET is_used = TRUE WHERE id = %s",
                 (verification['id'],)
             )
             
-            # Get user details
             cursor.execute("SELECT * FROM users WHERE phone_number = %s", (phone_number,))
             user = cursor.fetchone()
             
@@ -251,7 +241,6 @@ def dashboard():
 def register():
     if request.method == 'POST':
         try:
-            # Get form data
             form_data = {
                 'full_name': request.form.get('full_name'),
                 'phone_number': request.form.get('phone_number'),
@@ -261,7 +250,6 @@ def register():
                 'location': request.form.get('location', '')
             }
 
-            # Validate form data
             if not all([form_data['full_name'], form_data['phone_number'], form_data['username'],
                        request.form.get('password'), request.form.get('confirm_password')]):
                 flash("Full Name, Phone Number, Username and Password are mandatory!", "danger")
@@ -271,18 +259,15 @@ def register():
                 flash("Phone number should be exactly 10 digits!", "danger")
                 return render_template('register.html', avatars=AVATARS, form_data=form_data)
 
-            # Database connection with context management
             with get_db_connection() as conn:
                 cursor = conn.cursor(dictionary=True)
 
                 try:
-                    # Check duplicate phone
                     cursor.execute("SELECT * FROM users WHERE phone_number = %s", (form_data['phone_number'],))
                     if cursor.fetchone():
                         flash("This phone number is already registered!", "danger")
                         return render_template('register.html', avatars=AVATARS, form_data=form_data)
 
-                    # Check duplicate username
                     cursor.execute("SELECT * FROM users WHERE username = %s", (form_data['username'],))
                     if cursor.fetchone():
                         flash("This username is already taken!", "danger")
@@ -292,11 +277,9 @@ def register():
                         flash("Passwords do not match!", "danger")
                         return render_template('register.html', avatars=AVATARS, form_data=form_data)
 
-                    # Hash password
                     hashed_password = bcrypt.hashpw(request.form.get('password').encode('utf-8'), 
                                                  bcrypt.gensalt()).decode('utf-8')
 
-                    # Handle profile picture
                     profile_picture = "default_profile.png"
                     file = request.files.get('avatar_file')
                     avatar_choice = request.form.get('avatar_choice')
@@ -316,7 +299,6 @@ def register():
                     elif avatar_choice in AVATARS:
                         profile_picture = avatar_choice
 
-                    # Insert user
                     cursor.execute(
                         """INSERT INTO users 
                            (full_name, phone_number, username, password, gender, bio, location, profile_picture) 
@@ -412,7 +394,7 @@ def edit_profile():
 def post_job():
     if 'user_id' not in session:
         flash("You must be logged in to post a job.", "warning")
-        return redirect(url_for('home'))  # Redirect to login page
+        return redirect(url_for('home')) 
 
     if request.method == 'POST':
         # Collect form data
@@ -425,10 +407,8 @@ def post_job():
             'job_type': request.form.get('job_type', '').strip()
         }
 
-        # Log the received form data for debugging
         app.logger.info(f"Received job post data: {form_data}")
 
-        # Validate required fields
         missing_fields = [field for field in ['title', 'description', 'location', 'phone_number', 'job_type'] if not form_data[field]]
         if missing_fields:
             app.logger.error(f"Missing fields: {missing_fields}")
@@ -439,7 +419,6 @@ def post_job():
             with get_db_connection() as conn:
                 cursor = conn.cursor()
 
-                # Insert the job into the database
                 cursor.execute(
                     """INSERT INTO jobs 
                        (title, description, location, salary, phone_number, job_type, posted_by) 
@@ -450,13 +429,10 @@ def post_job():
                 )
                 conn.commit()
 
-                # Log success
                 app.logger.info(f"Job posted successfully by user {session['user_id']}")
                 flash("Job posted successfully!", "success")
-                return redirect(url_for('post_job'))  # Stay on the post job page
-
+                return redirect(url_for('post_job'))  
         except Exception as e:
-            # Log the error for debugging
             app.logger.error(f"Error posting job: {str(e)}")
             flash("An error occurred while posting the job. Please try again.", "danger")
             return render_template('post_job.html', job_titles=RURAL_JOB_TITLES, form_data=form_data)
@@ -536,14 +512,14 @@ def search_jobs():
         location=location,
         date_posted=date_posted,
         job_type=job_type,
-        saved_jobs=saved_jobs  # Pass saved_jobs to the template
+        saved_jobs=saved_jobs  
     )
 
 @app.route('/post_animal', methods=['GET', 'POST'])
 def post_animal():
     if 'user_id' not in session:
         flash("You must be logged in to post an animal.", "warning")
-        return redirect(url_for('home'))  # Redirect to login page
+        return redirect(url_for('home')) 
 
     if request.method == 'POST':
         category = request.form.get('animal_category')
@@ -562,7 +538,7 @@ def post_animal():
 
         if not all([animal_name, weight, price, location, contact_number]):
             flash("Please fill in all required fields!", "danger")
-            return render_template('post_animal.html')  # Stay on the post animal page
+            return render_template('post_animal.html')  
 
         photo_filenames = []
         for photo in photos:
@@ -585,7 +561,7 @@ def post_animal():
                 cursor.close()
 
             flash("Animal posted successfully!", "success")
-            return redirect(url_for('post_animal'))  # Stay on the post animal page
+            return redirect(url_for('post_animal'))  
 
         except Exception as e:
             app.logger.error(f"Error posting animal: {str(e)}")
@@ -661,7 +637,7 @@ def search_animals():
 def save_animal(animal_id):
     if 'user_id' not in session:
         flash("Please log in first.", "warning")
-        return jsonify({'success': False, 'message': 'Please log in first'})  # Return JSON response
+        return jsonify({'success': False, 'message': 'Please log in first'})  
 
     user_id = session['user_id']
     try:
@@ -722,7 +698,7 @@ def saved_animals():
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
-        login_id = request.form.get('login_id')  # Can be username or phone
+        login_id = request.form.get('login_id')  
         
         with get_db_connection() as conn:
             cursor = conn.cursor(dictionary=True)
@@ -730,11 +706,9 @@ def forgot_password():
             user = cursor.fetchone()
             
             if user:
-                # Generate reset token
                 reset_token = secrets.token_urlsafe(32)
                 expires_at = datetime.now() + timedelta(hours=1)
                 
-                # Store reset token in database
                 cursor.execute(
                     "INSERT INTO password_resets (user_id, token, expires_at) VALUES (%s, %s, %s)",
                     (user['id'], reset_token, expires_at)
@@ -743,11 +717,11 @@ def forgot_password():
                 
               
                 flash(f"Reset token: {reset_token}", "info")
-                return redirect(url_for('home'))  # Redirect to login page
+                return redirect(url_for('home'))  
             
             flash("No account found with that username/phone number", "danger")
             cursor.close()
-            return redirect(url_for('forgot_password'))  # Stay on forgot password page
+            return redirect(url_for('forgot_password')) 
         
     return render_template('forgot_password.html')
 
@@ -768,7 +742,6 @@ def reset_password(token):
         with get_db_connection() as conn:
             cursor = conn.cursor(dictionary=True)
             
-            # Get reset record and check if valid
             cursor.execute(
                 """SELECT pr.*, u.username 
                    FROM password_resets pr
@@ -779,49 +752,44 @@ def reset_password(token):
             reset = cursor.fetchone()
             
             if reset:
-                # Update password
                 hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
                 cursor.execute(
                     "UPDATE users SET password = %s WHERE id = %s",
                     (hashed_password, reset['user_id'])
                 )
-                # Mark token as used
                 cursor.execute("UPDATE password_resets SET used = TRUE WHERE id = %s", (reset['id'],))
                 conn.commit()
                 
                 flash(f"Password reset successful! You can now login with your new password", "success")
-                return redirect(url_for('home'))  # Redirect to login page
+                return redirect(url_for('home'))  
             else:
                 flash("Invalid or expired reset token", "danger")
                 cursor.close()
-                return redirect(url_for('forgot_password'))  # Redirect to forgot password page
+                return redirect(url_for('forgot_password'))  
 
-    # GET request - show reset form        
     return render_template('reset_password.html', token=token)
 
 @app.route('/logout')
 def logout():
     session.clear()
     flash("Logged out successfully!", "info")
-    return redirect(url_for('home'))  # Redirect to login page
+    return redirect(url_for('home'))  
 
 @app.route('/save_job/<int:job_id>', methods=['POST'])
 def save_job(job_id):
     if 'user_id' not in session:
         flash("Please log in first.", "warning")
-        return jsonify({'success': False, 'message': 'Please log in first'})  # Return JSON response
+        return jsonify({'success': False, 'message': 'Please log in first'})  
 
     user_id = session['user_id']
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
             
-            # Check if job exists first
             cursor.execute("SELECT id FROM jobs WHERE id = %s", (job_id,))
             if not cursor.fetchone():
                 return jsonify({'success': False, 'message': 'Job not found'})
             
-            # Check if already bookmarked
             cursor.execute(
                 "SELECT id FROM bookmarks WHERE user_id = %s AND job_id = %s", 
                 (user_id, job_id)
@@ -829,14 +797,12 @@ def save_job(job_id):
             existing = cursor.fetchone()
             
             if existing:
-                # Remove bookmark
                 cursor.execute(
                     "DELETE FROM bookmarks WHERE user_id = %s AND job_id = %s",
                     (user_id, job_id)
                 )
                 saved = False
             else:
-                # Add bookmark
                 cursor.execute(
                     "INSERT INTO bookmarks (user_id, job_id) VALUES (%s, %s)",
                     (user_id, job_id)
@@ -875,7 +841,6 @@ def saved_jobs():
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
 
-        # Fetch saved jobs
         cursor.execute("""
             SELECT jobs.*, bookmarks.created_at AS saved_at, users.full_name, users.profile_picture
             FROM bookmarks
@@ -892,7 +857,6 @@ def saved_jobs():
 @app.route('/health')
 def health_check():
     try:
-        # Test database connection
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT 1')
@@ -916,7 +880,6 @@ def drop_indexes():
     except Exception as e:
         return f"Error dropping indexes: {str(e)}"
 
-# Configure logging
 if not app.debug:
     if not os.path.exists('logs'):
         os.mkdir('logs')

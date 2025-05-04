@@ -386,22 +386,22 @@ input[type="text"], input[type="password"], input[type="number"], select, textar
     outline: none;
     border-radius: 15px;
     padding: 1em;
-    background-color: #f5f5f5; /* Light gray background for a clean look */
-    box-shadow: inset 2px 5px 10px rgba(0, 0, 0, 0.1); /* Subtle inset shadow */
+    background-color: #f5f5f5;
+    box-shadow: inset 2px 5px 10px rgba(0, 0, 0, 0.1); 
     transition: 300ms ease-in-out;
     width: 100%;
     box-sizing: border-box;
     font-size: 1em;
-    color: rgb(37, 41, 40); /* Dark gray text */
-    margin-bottom: 15px; /* Add spacing between fields */
-    font-family: 'Alata', sans-serif; /* Match the font with the rest of the page */
+    color: rgb(37, 41, 40); 
+    margin-bottom: 15px; 
+    font-family: 'Alata', sans-serif; 
 }
 
 input:focus, textarea:focus, select:focus {
     background-color: white;
-    transform: scale(1.02); /* Slight zoom effect on focus */
-    box-shadow: 0 0 10px rgba(191, 89, 30, 0.5); /* Glow effect */
-    outline: none; /* Remove default outline */
+    transform: scale(1.02); 
+    box-shadow: 0 0 10px rgba(191, 89, 30, 0.5); 
+    outline: none; 
 }
 
 /* Textarea Styling */

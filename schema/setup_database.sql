@@ -1,7 +1,5 @@
--- Disable foreign key checks temporarily
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Create users table first (as it's referenced by others)
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -15,7 +13,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create jobs table
 CREATE TABLE IF NOT EXISTS jobs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
@@ -29,7 +26,6 @@ CREATE TABLE IF NOT EXISTS jobs (
     FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create animals table
 CREATE TABLE IF NOT EXISTS animals (
     id INT AUTO_INCREMENT PRIMARY KEY,
     category VARCHAR(100) NOT NULL,
@@ -46,7 +42,6 @@ CREATE TABLE IF NOT EXISTS animals (
     FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create bookmarks table
 CREATE TABLE IF NOT EXISTS bookmarks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -57,7 +52,6 @@ CREATE TABLE IF NOT EXISTS bookmarks (
     UNIQUE KEY unique_bookmark (user_id, job_id)
 );
 
--- Create animal bookmarks table
 CREATE TABLE IF NOT EXISTS animal_bookmarks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -68,7 +62,6 @@ CREATE TABLE IF NOT EXISTS animal_bookmarks (
     UNIQUE KEY unique_animal_bookmark (user_id, animal_id)
 );
 
--- Create password resets table
 CREATE TABLE IF NOT EXISTS password_resets (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -79,7 +72,6 @@ CREATE TABLE IF NOT EXISTS password_resets (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create OTP verifications table
 CREATE TABLE IF NOT EXISTS otp_verifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     phone_number VARCHAR(15) NOT NULL,
@@ -89,8 +81,6 @@ CREATE TABLE IF NOT EXISTS otp_verifications (
     is_used BOOLEAN DEFAULT FALSE
 );
 
--- Create local prices table
-CREATE TABLE IF NOT EXISTS local_prices (
     id INT AUTO_INCREMENT PRIMARY KEY,
     commodity VARCHAR(100) NOT NULL,
     price DECIMAL(10,2) NOT NULL,
@@ -101,5 +91,4 @@ CREATE TABLE IF NOT EXISTS local_prices (
     FOREIGN KEY (submitted_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
