@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}{{ get_text('search_animals') }}{% endblock %}
+{% block title %}{{ get_text('search animals') }}{% endblock %}
 
 {% block content %}
 <div class="container">
     <nav>
-        <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a> |
-        <a href="{{ url_for('post_animal') }}">{{ get_text('post_animal') }}</a> |
-        <a href="{{ url_for('saved_animals') }}">{{ get_text('saved_animals') }}</a>
+        <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
+        <a href="{{ url_for('post_animal') }}">{{ get_text('post animal') }}</a> |
+        <a href="{{ url_for('saved_animals') }}">{{ get_text('saved animals') }}</a>       |
+        
     </nav>
 
     <div class="filter-container">
@@ -84,7 +85,7 @@
                         {% if animal.photos.split(',')|length > 1 %}
                             <span class="more-photos">+{{ animal.photos.split(',')|length - 1 }}</span>
                         {% endif %}
-                        <p class="tap-note">{{ get_text('tap_photo_to_view') }}</p>
+                        <p class="tap-note">{{ get_text('tap photo to view') }}</p>
                     </div>
                     <h3>{{ animal.category }}{% if animal.breed %} - {{ animal.breed }}{% endif %}</h3>
                     <p><strong>{{ get_text('price') }}:</strong> ₹{{ animal.cost }}</p>

@@ -150,10 +150,5 @@
     "price_per_quintal": "Price per Quintal (₹)",
     "filter_commodities": "Filter Commodities",
     "source_agmarknet": "Data provided by Agmarknet",
-    "tap_photo_to_view": "Tap photo to view",
-    "contact_number": "Contact Number",
-    "specify_animal": "Specify Animal",
-    "enter_animal_name": "Enter animal name",
-    "max_4_photos": "Max 4 photos",
-    "price": "Price"
+    "tap_photo_to_view": "Tap photo to view"
 }
