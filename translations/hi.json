@@ -123,12 +123,5 @@
     "price_per_quintal": "मूल्य प्रति क्विंटल (₹)",
     "filter_commodities": "वस्तुएं फ़िल्टर करें",
     "source_agmarknet": "डेटा Agmarknet द्वारा प्रदान किया गया",
-    "tap_photo_to_view": "फोटो देखने के लिए टैप करें",
-    "username or phone placeholder": "उपयोगकर्ता नाम या फ़ोन नंबर दर्ज करें",
-    "reset_password": "पासवर्ड रीसेट करें",
-    "new_password": "नया पासवर्ड",
-    "update_password": "पासवर्ड अपडेट करें",
-    "back_to_login": "लॉगिन पर वापस जाएं",
-    "password_requirements": "पासवर्ड कम से कम 6 अक्षरों का होना चाहिए",
-    "reset_token_hidden": "सुरक्षा कारणों से रीसेट टोकन छिपा हुआ है"
+    "tap_photo_to_view": "फोटो देखने के लिए टैप करें"
 }
