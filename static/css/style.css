@@ -95,6 +95,12 @@ body {
     transition: transform 0.2s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Updated container styles to match other pages */
@@ -352,6 +358,9 @@ body {
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease;
 }
 
 .avatar-option img {
@@ -369,15 +378,19 @@ body {
 .avatar-option.selected {
     border-color: rgb(191, 89, 30);
     box-shadow: 0 0 8px rgba(191, 89, 30, 0.5);
+    border-color: #bf591e;
 }
 
-/* Preview Uploaded Image */
 .preview-image {
     width: 100px;
     height: 100px;
     border-radius: 50%;
     display: none;
     margin-top: 10px;
+    max-width: 100px;
+    max-height: 100px;
+    margin-top: 10px;
+    display: none;
 }
 
 /* Form Inputs */

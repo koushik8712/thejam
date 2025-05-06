@@ -352,52 +352,52 @@ def edit_profile():
         cursor = conn.cursor(dictionary=True)
 
         if request.method == 'POST':
-            full_name = request.form.get('full_name')
-            phone_number = request.form.get('phone_number')
-            gender = request.form.get('gender')
-            bio = request.form.get('bio')
-            location = request.form.get('location')
-            avatar_choice = request.form.get('avatar_choice')
-            file = request.files.get('avatar_file')
+            try:
+                full_name = request.form.get('full_name')
+                phone_number = request.form.get('phone_number')
+                gender = request.form.get('gender')
+                bio = request.form.get('bio')
+                location = request.form.get('location')
+                avatar_choice = request.form.get('avatar_choice')
+                file = request.files.get('avatar_file')
 
-            profile_picture = None
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                profile_picture = filename
-            elif avatar_choice in AVATARS:
-                profile_picture = avatar_choice
+                profile_picture = None
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    profile_picture = filename
+                elif avatar_choice in AVATARS:
+                    profile_picture = avatar_choice
 
-            update_query = """
-                UPDATE users SET full_name = %s, phone_number = %s, gender = %s, bio = %s, location = %s
-            """ + (", profile_picture = %s" if profile_picture else "") + " WHERE id = %s"
+                update_query = """
+                    UPDATE users SET full_name = %s, phone_number = %s, gender = %s, bio = %s, location = %s
+                """ + (", profile_picture = %s" if profile_picture else "") + " WHERE id = %s"
 
-            data = [full_name, phone_number, gender, bio, location]
-            if profile_picture:
-                data.append(profile_picture)
-            data.append(user_id)
+                data = [full_name, phone_number, gender, bio, location]
+                if profile_picture:
+                    data.append(profile_picture)
+                data.append(user_id)
 
-            cursor.execute(update_query, tuple(data))
-            conn.commit()
-            cursor.close()
-
-            flash("Profile updated successfully!", "success")
-            return redirect(url_for('profile'))
+                cursor.execute(update_query, tuple(data))
+                conn.commit()
+                flash("Profile updated successfully!", "success")
+                return redirect(url_for('profile'))
+            except Exception as e:
+                app.logger.error(f"Error updating profile: {str(e)}")
+                flash("An error occurred while updating your profile. Please try again.", "danger")
 
         try:
             cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
             user = cursor.fetchone()
-            cursor.close()
-
             if not user:
-                app.logger.error(f"User with ID {user_id} not found in the database.")
                 flash("User not found. Please contact support.", "danger")
-                return redirect(url_for('dashboard'))  # Redirect to dashboard if user not found
-
+                return redirect(url_for('dashboard'))
         except Exception as e:
-            app.logger.error(f"Error fetching user data for ID {user_id}: {str(e)}")
+            app.logger.error(f"Error fetching user data: {str(e)}")
             flash("An error occurred while fetching your profile. Please try again later.", "danger")
             return redirect(url_for('dashboard'))
+        finally:
+            cursor.close()
 
     return render_template('edit_profile.html', user=user, avatars=AVATARS)
 
