@@ -726,9 +726,8 @@ def forgot_password():
                 )
                 conn.commit()
                 
-              
-                flash(f"Reset token: {reset_token}", "info")
-                return redirect(url_for('home'))  
+                # Redirect to the reset password page with the token
+                return redirect(url_for('reset_password', token=reset_token))
             
             flash("No account found with that username/phone number", "danger")
             cursor.close()
@@ -771,7 +770,7 @@ def reset_password(token):
                 cursor.execute("UPDATE password_resets SET used = TRUE WHERE id = %s", (reset['id'],))
                 conn.commit()
                 
-                flash(f"Password reset successful! You can now login with your new password", "success")
+                flash("Password reset successful! You can now login with your new password", "success")
                 return redirect(url_for('home'))  
             else:
                 flash("Invalid or expired reset token", "danger")
