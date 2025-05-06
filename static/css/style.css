@@ -684,5 +684,5 @@ button:active, .edit-profile-btn:active, .logout-btn:active {
 }
 
 .edit-profile-container {
-    background-color: #f3e2b9; /* Match other containers */
+    background-color: rgba(253, 242, 203, 0.9);
 }
