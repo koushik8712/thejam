@@ -384,13 +384,20 @@ def edit_profile():
             flash("Profile updated successfully!", "success")
             return redirect(url_for('profile'))
 
-        cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-        user = cursor.fetchone()
-        cursor.close()
+        try:
+            cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+            user = cursor.fetchone()
+            cursor.close()
 
-        if not user:
-            flash("User not found. Please contact support.", "danger")
-            return redirect(url_for('dashboard'))  # Redirect to dashboard if user not found
+            if not user:
+                app.logger.error(f"User with ID {user_id} not found in the database.")
+                flash("User not found. Please contact support.", "danger")
+                return redirect(url_for('dashboard'))  # Redirect to dashboard if user not found
+
+        except Exception as e:
+            app.logger.error(f"Error fetching user data for ID {user_id}: {str(e)}")
+            flash("An error occurred while fetching your profile. Please try again later.", "danger")
+            return redirect(url_for('dashboard'))
 
     return render_template('edit_profile.html', user=user, avatars=AVATARS)
 
