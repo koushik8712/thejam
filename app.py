@@ -388,6 +388,10 @@ def edit_profile():
         user = cursor.fetchone()
         cursor.close()
 
+        if not user:
+            flash("User not found. Please contact support.", "danger")
+            return redirect(url_for('dashboard'))  # Redirect to dashboard if user not found
+
     return render_template('edit_profile.html', user=user, avatars=AVATARS)
 
 @app.route('/post_job', methods=['GET', 'POST'])
