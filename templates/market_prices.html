@@ -5,13 +5,13 @@
 {% block content %}
 <div class="container">
     <h1>{{ get_text('market_prices') }}</h1>
-    <p class="source-info">Data provided by Agmarknet</p>
+    <p class="source-info">{{ get_text('data_provided_by_agmarknet') }}</p>
 
     <!-- Filters -->
     <div class="filters">
         <form method="GET" class="filter-form">
             <select name="commodity" onchange="this.form.submit()">
-                <option value="">All Commodities</option>
+                <option value="">{{ get_text('all_commodities') }}</option>
                 {% for commodity in commodities.keys() %}
                     <option value="{{ commodity }}" {% if request.args.get('commodity') == commodity %}selected{% endif %}>
                         {{ commodity }}
@@ -30,12 +30,12 @@
                     <table class="price-table">
                         <thead>
                             <tr>
-                                <th>Market</th>
-                                <th>District</th>
-                                <th>Min Price (₹)</th>
-                                <th>Max Price (₹)</th>
-                                <th>Modal Price (₹)</th>
-                                <th>Date</th>
+                                <th>{{ get_text('market') }}</th>
+                                <th>{{ get_text('district') }}</th>
+                                <th>{{ get_text('min_price') }} (₹)</th>
+                                <th>{{ get_text('max_price') }} (₹)</th>
+                                <th>{{ get_text('modal_price') }} (₹)</th>
+                                <th>{{ get_text('date') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -54,7 +54,7 @@
                 </div>
             {% endfor %}
         {% else %}
-            <p class="no-data">No market price data available at the moment.</p>
+            <p class="no-data">{{ get_text('no_market_price_data') }}</p>
         {% endif %}
     </div>
 </div>

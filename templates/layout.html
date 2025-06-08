@@ -1,7 +1,7 @@
 <div class="language-selector">
-    <a href="{{ url_for('change_language', lang='en') }}">English</a> |
-    <a href="{{ url_for('change_language', lang='hi') }}">हिंदी</a> |
-    <a href="{{ url_for('change_language', lang='te') }}">తెలుగు</a>
+    <a href="{{ url_for('change_language', lang='en') }}">{{ get_text('english') }}</a> |
+    <a href="{{ url_for('change_language', lang='hi') }}">{{ get_text('हिंदी') }}</a> |
+    <a href="{{ url_for('change_language', lang='te') }}">{{ get_text('తెలుగు') }}</a>
 </div>
 
 <a href="{{ url_for('dashboard') }}">{{ get_text('dashboard') }}</a>
