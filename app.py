@@ -2,13 +2,14 @@ import os
 import json
 import random
 from flask import Flask, request, render_template, redirect, url_for, session, flash, jsonify
-import mysql.connector
+import psycopg2
+import psycopg2.extras
 import bcrypt
 from werkzeug.utils import secure_filename
 import secrets
 from datetime import datetime, timedelta
 import pandas as pd
-from dotenv import load_dotenv  # Added for environment variables
+from dotenv import load_dotenv
 import logging
 from logging.handlers import RotatingFileHandler
 import traceback
@@ -55,37 +56,22 @@ def get_db_connection():
     conn = None
     try:
         db_config = {
-            'host': os.getenv('DB_HOST', 'mysql.railway.internal'),
-            'user': os.getenv('DB_USER', 'root'),
-            'password': os.getenv('DB_PASSWORD','payBGkxifWTJqncDMjpiYCjKVUzuOxwD'),  # This is required
-            'database': os.getenv('DB_NAME', 'railway'),
-            'port': int(os.getenv('DB_PORT', '3306')),
-            'auth_plugin': 'mysql_native_password',
-            'connect_timeout': 30,
-            'use_pure': True,
-            'allow_local_infile': True,
-            'raise_on_warnings': True
+            'host': os.getenv('DB_HOST', 'localhost'),
+            'user': os.getenv('DB_USER', 'postgres'),
+            'password': os.getenv('DB_PASSWORD', ''),
+            'dbname': os.getenv('DB_NAME', 'postgres'),
+            'port': int(os.getenv('DB_PORT', '5432')),
         }
-        
         app.logger.info(f"Attempting database connection to {db_config['host']}:{db_config['port']} as {db_config['user']}")
-        
-        if not db_config['password']:
-            raise ValueError("Database password not set in environment variables")
-            
-        conn = mysql.connector.connect(**db_config)
-        conn.ping(reconnect=True, attempts=3, delay=5)
+        conn = psycopg2.connect(**db_config)
         yield conn
-        
-    except mysql.connector.Error as e:
+    except Exception as e:
         app.logger.error(f"Database connection failed: {str(e)}")
-        if conn and conn.is_connected():
+        if conn:
             conn.rollback()
         raise
-    except ValueError as e:
-        app.logger.error(f"Configuration error: {str(e)}")
-        raise
     finally:
-        if conn and conn.is_connected():
+        if conn:
             conn.close()
             app.logger.info("Database connection closed")
 
@@ -138,7 +124,7 @@ def login():
             password = request.form['password']
 
             with get_db_connection() as conn:
-                cursor = conn.cursor(dictionary=True)
+                cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                 cursor.execute("SELECT * FROM users WHERE username = %s OR phone_number = %s", 
                              (login_id, login_id))
                 user = cursor.fetchone()
@@ -153,7 +139,7 @@ def login():
                     flash("Incorrect Password or Username/Phone", "danger")
                     return redirect(url_for('home'))  # Redirect to login page
 
-        except mysql.connector.Error as e:
+        except Exception as e:
             app.logger.error(f"Database error during login: {e}")
             flash("Unable to process login. Please try again.", "error")
             return redirect(url_for('home'))
@@ -193,7 +179,7 @@ def verify_otp():
     otp = request.form.get('otp')
 
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute(
             """SELECT * FROM otp_verifications 
@@ -260,7 +246,7 @@ def register():
                 return render_template('register.html', avatars=AVATARS, form_data=form_data)
 
             with get_db_connection() as conn:
-                cursor = conn.cursor(dictionary=True)
+                cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
                 try:
                     cursor.execute("SELECT * FROM users WHERE phone_number = %s", (form_data['phone_number'],))
@@ -334,7 +320,7 @@ def profile():
 
     user_id = session['user_id']
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute("SELECT full_name, username, phone_number, gender, bio, location, profile_picture FROM users WHERE id = %s", (user_id,))
         user = cursor.fetchone()
         cursor.close()
@@ -349,7 +335,7 @@ def edit_profile():
 
     user_id = session['user_id']
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         if request.method == 'POST':
             try:
@@ -462,7 +448,7 @@ def search_jobs():
     job_type = request.form.get('job_type', '')
 
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         query = """
         SELECT jobs.*, users.full_name, users.profile_picture FROM jobs
@@ -591,7 +577,7 @@ def search_animals():
     location = request.form.get('location', '')
 
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         query = """
         SELECT animals.*, users.full_name, users.profile_picture 
         FROM animals
@@ -691,7 +677,7 @@ def saved_animals():
         return redirect(url_for('home'))
 
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute("""
             SELECT animals.*, animal_bookmarks.created_at AS saved_at, 
                    users.full_name, users.profile_picture
@@ -712,7 +698,7 @@ def forgot_password():
         login_id = request.form.get('login_id')  
         
         with get_db_connection() as conn:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cursor.execute("SELECT * FROM users WHERE username = %s OR phone_number = %s", (login_id, login_id))
             user = cursor.fetchone()
             
@@ -750,7 +736,7 @@ def reset_password(token):
             return render_template('reset_password.html', token=token)
         
         with get_db_connection() as conn:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             
             cursor.execute(
                 """SELECT pr.*, u.username 
@@ -849,7 +835,7 @@ def saved_jobs():
 
     user_id = session['user_id']
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("""
             SELECT jobs.*, bookmarks.created_at AS saved_at, users.full_name, users.profile_picture
