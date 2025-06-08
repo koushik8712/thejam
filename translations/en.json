@@ -149,5 +149,16 @@
     "price_per_quintal": "Price per Quintal (₹)",
     "filter_commodities": "Filter Commodities",
     "source_agmarknet": "Data provided by Agmarknet",
-    "tap_photo_to_view": "Tap photo to view"
+    "tap_photo_to_view": "Tap photo to view",
+    "dashboard_title": "Dashboard",
+    "dashboard_welcome": "Welcome to your dashboard!",
+    "dashboard_options": "Dashboard Options",
+    "dashboard_post_job": "Post a Job",
+    "dashboard_post_animal": "Post an Animal",
+    "dashboard_search_jobs": "Search Jobs",
+    "dashboard_search_animals": "Search Animals",
+    "dashboard_saved_jobs": "Saved Jobs",
+    "dashboard_saved_animals": "Saved Animals",
+    "dashboard_edit_profile": "Edit Profile",
+    "dashboard_logout": "Logout"
 }
