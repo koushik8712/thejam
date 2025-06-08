@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=100%, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>{{ get_text('Search Jobs') }}</title>
+    <title>{{ get_text('search jobs') }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/like.js') }}" defer></script>
     <style>
@@ -184,7 +184,7 @@
         
         
         <div class="filter-container">
-            <h2>{{ get_text('search_jobs') }}</h2>
+            <h2>{{ get_text('search jobs') }}</h2>
             <form method="POST" id="filterForm">
                 <label for="filter_by">{{ get_text('filter_by') }}</label>
                 <select name="filter_by" id="filter_by" onchange="toggleFilterInputs()">

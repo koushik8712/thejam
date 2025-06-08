@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ get_text('post_animal') }}{% endblock %}
+{% block title %}{{ get_text('post animal') }}{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -12,7 +12,7 @@
     </nav>
 
     <div class="post-form-container">
-        <h2>{{ get_text('sell_animals') }}</h2>
+        <h2>{{ get_text('sell animals') }}</h2>
         <form action="{{ url_for('post_animal') }}" method="POST" enctype="multipart/form-data" id="animalForm">
             <div class="form-group">
                 <label for="animal_category">{{ get_text('select_animal') }}*</label>
