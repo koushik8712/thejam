@@ -56,11 +56,11 @@ def get_db_connection():
     conn = None
     try:
         db_config = {
-            'host': os.getenv('DB_HOST', 'localhost'),
-            'user': os.getenv('DB_USER', 'postgres'),
-            'password': os.getenv('DB_PASSWORD', ''),
-            'dbname': os.getenv('DB_NAME', 'postgres'),
-            'port': int(os.getenv('DB_PORT', '5432')),
+            'host': os.getenv('DB_HOST'),
+            'user': os.getenv('DB_USER'),
+            'password': os.getenv('DB_PASSWORD'),
+            'dbname': os.getenv('DB_NAME'),
+            'port': int(os.getenv('DB_PORT')),
         }
         app.logger.info(f"Attempting database connection to {db_config['host']}:{db_config['port']} as {db_config['user']}")
         conn = psycopg2.connect(**db_config)
@@ -875,6 +875,18 @@ def drop_indexes():
         return "Indexes dropped successfully"
     except Exception as e:
         return f"Error dropping indexes: {str(e)}"
+
+@app.route('/db_test')
+def db_test():
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT 1')
+            result = cursor.fetchone()
+            cursor.close()
+        return f"Database connected! Result: {result}"
+    except Exception as e:
+        return f"Database connection failed: {e}"
 
 if not app.debug:
     if not os.path.exists('logs'):
