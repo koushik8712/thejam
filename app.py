@@ -17,6 +17,7 @@ import time
 import socket
 from contextlib import contextmanager
 from markupsafe import escape
+from utils.translations import translator
 
 
 load_dotenv()
@@ -44,6 +45,9 @@ RURAL_JOB_TITLES = [
     "Greenhouse Worker", "Agricultural Scientist", "Soil Tester",
     "Water Resource Manager", "Farm Equipment Operator", "Seed Distributor"
 ]
+
+app.config['BABEL_DEFAULT_LOCALE'] = 'te'
+app.config['BABEL_TRANSLATION_DIRECTORIES'] = './translations'
 
 def ensure_upload_dirs():
     for directory in [UPLOAD_FOLDER, AVATAR_FOLDER]:
@@ -88,23 +92,10 @@ def load_translations(lang):
 
 @app.context_processor
 def utility_processor():
-    def get_text(key, *args, **kwargs):
-        lang = session.get('language', 'en')
-        translations = load_translations(lang)
-        text = translations.get(key, key)
-        if args or kwargs:
-            return text % (args or kwargs)
-        return text
+    return dict(get_text=get_text)
 
-    saved_count = 0
-    if 'user_id' in session:
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM bookmarks WHERE user_id = %s", (session['user_id'],))
-            saved_count = cursor.fetchone()[0]
-            cursor.close()
-
-    return dict(get_text=get_text, saved_count=saved_count)
+def get_text(key):
+    return translator.get_text(key, session.get('language', 'te'))
 
 @app.route('/change_language/<lang>')
 def change_language(lang):
@@ -918,6 +909,9 @@ def internal_error(error):
     app.logger.error('Server Error: %s', str(error))
     app.logger.error(traceback.format_exc())
     return render_template('errors/500.html'), 500
+
+def get_text(key):
+    return translator.get_text(key, session.get('language', 'te'))
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
