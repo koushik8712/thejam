@@ -24,7 +24,7 @@
         <label for="title">{{ get_text('job_title') }}</label>
         <select name="title" id="title" required>
             <option value="" disabled selected>{{ get_text('select_job') }}</option>
-            {% for title in job_titles %} 
+            {% for title in job_titles %}
             <option value="{{ title }}">{{ get_text(title) }}</option>
             {% endfor %}
         </select>
@@ -33,7 +33,7 @@
         <textarea name="description" id="description" rows="4" placeholder="{{ get_text('job_description_placeholder') }}"></textarea>
 
         <label for="location">{{ get_text('job_location') }}</label>
-        <input type="text" name="location" id="location" required placeholder="{{ get_text('village_town_placeholder') }}">
+        <input type="text" name="location" id="location" required placeholder="{{ get_text('job_location_placeholder') }}">
 
         <label for="village_name">{{ get_text('village_name') }}</label>
         <input type="text" name="village_name" id="village_name" placeholder="{{ get_text('village_name_placeholder') }}">
