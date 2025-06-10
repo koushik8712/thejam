@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=100%, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>{{ get_text('search jobs') }}</title>
+    <title>{{ get_text('search_jobs') }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/like.js') }}" defer></script>
     <style>
@@ -171,48 +171,48 @@
 </head>
 <body>
     <div class="language-selector">
-        <a href="{{ url_for('change_language', lang='en') }}" {% if session.get('language') == 'en' %}class="active"{% endif %}>English</a> |
-        <a href="{{ url_for('change_language', lang='hi') }}" {% if session.get('language') == 'hi' %}class="active"{% endif %}>हिंदी</a> |
-        <a href="{{ url_for('change_language', lang='te') }}" {% if session.get('language') == 'te' %}class="active"{% endif %}>తెలుగు</a>
+        <a href="{{ url_for('change_language', lang='en') }}" {% if session.get('language') == 'en' %}class="active"{% endif %}>{{ get_text('english') }}</a> |
+        <a href="{{ url_for('change_language', lang='hi') }}" {% if session.get('language') == 'hi' %}class="active"{% endif %}>{{ get_text('hindi') }}</a> |
+        <a href="{{ url_for('change_language', lang='te') }}" {% if session.get('language') == 'te' %}class="active"{% endif %}>{{ get_text('telugu') }}</a>
     </div>
     <div class="container">
         <nav>
-            <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
-            <a href="{{ url_for('post_job') }}">{{ get_text('post job') }}</a> |
-            <a href="{{ url_for('saved_jobs') }}">{{ get_text('liked jobs') }}</a>
+            <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a> |
+            <a href="{{ url_for('post_job') }}">{{ get_text('post_job') }}</a> |
+            <a href="{{ url_for('saved_jobs') }}">{{ get_text('liked_jobs') }}</a>
         </nav>
         
         
         <div class="filter-container">
-            <h2>{{ get_text('search jobs') }}</h2>
+            <h2>{{ get_text('search_jobs') }}</h2>
             <form method="POST" id="filterForm">
                 <label for="filter_by">{{ get_text('filter_by') }}</label>
                 <select name="filter_by" id="filter_by" onchange="toggleFilterInputs()">
-                    <option value="" {% if filter_by == '' %}selected{% endif %}>{{ get_text('select filter') }}</option>
+                    <option value="" {% if filter_by == '' %}selected{% endif %}>{{ get_text('select_filter') }}</option>
                     <option value="salary" {% if filter_by == 'salary' %}selected{% endif %}>{{ get_text('salary') }}</option>
-                    <option value="job_title" {% if filter_by == 'job_title' %}selected{% endif %}>{{ get_text('job title') }}</option>
-                    <option value="location" {% if filter_by == 'location' %}selected{% endif %}>{{ get_text('job location') }}</option>
-                    <option value="date_posted" {% if filter_by == 'date_posted' %}selected{% endif %}>{{ get_text('date posted') }}</option>
-                    <option value="job_type" {% if filter_by == 'job_type' %}selected{% endif %}>{{ get_text('job type') }}</option>
+                    <option value="job_title" {% if filter_by == 'job_title' %}selected{% endif %}>{{ get_text('job_title') }}</option>
+                    <option value="location" {% if filter_by == 'location' %}selected{% endif %}>{{ get_text('job_location') }}</option>
+                    <option value="date_posted" {% if filter_by == 'date_posted' %}selected{% endif %}>{{ get_text('date_posted') }}</option>
+                    <option value="job_type" {% if filter_by == 'job_type' %}selected{% endif %}>{{ get_text('job_type') }}</option>
                 </select>
 
                 <div id="salaryFilter" style="display: {% if filter_by == 'salary' %}block{% else %}none{% endif %};">
                     <label for="salary_min">{{ get_text('min_salary') }}</label>
-                    <input type="number" name="salary_min" id="salary_min" placeholder="{{ get_text('enter minimum salary') }}" value="{{ salary_min }}">
+                    <input type="number" name="salary_min" id="salary_min" placeholder="{{ get_text('enter_minimum_salary') }}" value="{{ salary_min }}">
                     <label for="salary_max">{{ get_text('max_salary') }}</label>
-                    <input type="number" name="salary_max" id="salary_max" placeholder="{{ get_text('enter maximum salary') }}" value="{{ salary_max }}">
+                    <input type="number" name="salary_max" id="salary_max" placeholder="{{ get_text('enter_maximum_salary') }}" value="{{ salary_max }}">
                     <label for="sort_salary">{{ get_text('sort_by') }}</label>
                     <select name="sort_salary" id="sort_salary">
                         <option value="" {% if sort_salary == '' %}selected{% endif %}>{{ get_text('select_sort') }}</option>
-                        <option value="high_to_low" {% if sort_salary == 'high_to_low' %}selected{% endif %}>{{ get_text('high to low salary') }}</option>
-                        <option value="low_to_high" {% if sort_salary == 'low_to_high' %}selected{% endif %}>{{ get_text('low to high salary') }}</option>
+                        <option value="high_to_low" {% if sort_salary == 'high_to_low' %}selected{% endif %}>{{ get_text('high_to_low_salary') }}</option>
+                        <option value="low_to_high" {% if sort_salary == 'low_to_high' %}selected{% endif %}>{{ get_text('low_to_high_salary') }}</option>
                     </select>
                 </div>
 
                 <div id="jobTitleFilter" style="display: {% if filter_by == 'job_title' %}block{% else %}none{% endif %};">
                     <label for="job_title">{{ get_text('job_title') }}</label>
                     <select name="job_title" id="job_title">
-                        <option value="">{{ get_text('select job') }}</option>
+                        <option value="">{{ get_text('select_job') }}</option>
                         {% for title in job_titles %}
                         <option value="{{ title }}" {% if job_title == title %}selected{% endif %}>{{ get_text(title) }}</option>
                         {% endfor %}
@@ -220,17 +220,17 @@
                 </div>
 
                 <div id="locationFilter" style="display: {% if filter_by == 'location' %}block{% else %}none{% endif %};">
-                    <label for="location">{{ get_text('job location') }}</label>
-                    <input type="text" name="location" id="location" placeholder="{{ get_text('enter location') }}" value="{{ location }}">
+                    <label for="location">{{ get_text('job_location') }}</label>
+                    <input type="text" name="location" id="location" placeholder="{{ get_text('enter_location') }}" value="{{ location }}">
                 </div>
 
                 <div id="datePostedFilter" style="display: {% if filter_by == 'date_posted' %}block{% else %}none{% endif %};">
-                    <label for="date_posted">{{ get_text('date posted') }}</label>
+                    <label for="date_posted">{{ get_text('date_posted') }}</label>
                     <select name="date_posted" id="date_posted">
-                        <option value="">{{ get_text('select date') }}</option>
-                        <option value="1" {% if date_posted == '1' %}selected{% endif %}>{{ get_text('last 1 day') }}</option>
-                        <option value="7" {% if date_posted == '7' %}selected{% endif %}>{{ get_text('last 7 days') }}</option>
-                        <option value="30" {% if date_posted == '30' %}selected{% endif %}>{{ get_text('last 30 days') }}</option>
+                        <option value="">{{ get_text('select_date') }}</option>
+                        <option value="1" {% if date_posted == '1' %}selected{% endif %}>{{ get_text('last_1_day') }}</option>
+                        <option value="7" {% if date_posted == '7' %}selected{% endif %}>{{ get_text('last_7_days') }}</option>
+                        <option value="30" {% if date_posted == '30' %}selected{% endif %}>{{ get_text('last_30_days') }}</option>
                     </select>
                 </div>
 
@@ -246,7 +246,7 @@
 
                 <div class="filter-buttons">
                     <button type="submit">{{ get_text('apply_filters') }}</button>
-                    <a href="{{ url_for('search_jobs') }}" class="reset-button">{{ get_text('reset search') }}</a>
+                    <a href="{{ url_for('search_jobs') }}" class="reset-button">{{ get_text('reset_search') }}</a>
                 </div>
             </form>
         </div>
@@ -273,18 +273,18 @@
                             <p><strong>{{ get_text('job_description') }}:</strong> {{ job.description }}</p>
                             <p><strong>{{ get_text('job_location') }}:</strong> {{ job.location }}</p>
                             <p><strong>{{ get_text('phone_number') }}:</strong> {{ job.phone_number }}</p>
-                            <p><strong>{{ get_text('salary') }}:</strong> {{ job.salary or get_text('not specified') }}</p>
+                            <p><strong>{{ get_text('salary') }}:</strong> {{ job.salary or get_text('not_specified') }}</p>
                             <p><strong>{{ get_text('job_type') }}:</strong> {{ get_text(job.job_type) }}</p>
-                            <p><strong>{{ get_text('posted by') }}:</strong> 
-                                <img src="{{ url_for('static', filename='avatars/' + job.profile_picture) }}" alt="Profile Picture" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle;">
+                            <p><strong>{{ get_text('posted_by') }}:</strong> 
+                                <img src="{{ url_for('static', filename='avatars/' + job.profile_picture) }}" alt="{{ get_text('profile_picture') }}" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle;">
                                 {{ job.full_name }}
                             </p>
                             <p><strong>{{ get_text('posted_on') }}:</strong> {{ job.created_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
                         </div>
                         <div class="job-card-actions">
                             <a href="https://www.google.com/maps/search/?api=1&query={{ job.location }}, {{ job.village_name }}, {{ job.mandal_name }}, {{ job.district }}, {{ job.pincode }}" target="_blank">{{ get_text('view_on_map') }}</a>
-                            <a href="https://wa.me/+91{{ job.phone_number }}?text={{ get_text('hello interested in job') }} {{ job.title }}" target="_blank">{{ get_text('contact on whatsapp') }}</a>
-                            <a href="sms:+91{{ job.phone_number }}?body={{ get_text('hello interested in job') }} {{ job.title }}">{{ get_text('contact via sms') }}</a>
+                            <a href="https://wa.me/+91{{ job.phone_number }}?text={{ get_text('hello_interested_in_job') }} {{ job.title }}" target="_blank">{{ get_text('contact_on_whatsapp') }}</a>
+                            <a href="sms:+91{{ job.phone_number }}?body={{ get_text('hello_interested_in_job') }} {{ job.title }}">{{ get_text('contact_via_sms') }}</a>
                             <label class="ui-bookmark">
                                 <input type="checkbox" data-job-id="{{ job.id }}" {% if job.id in saved_jobs %}checked{% endif %}>
                                 <div class="bookmark">

@@ -9,9 +9,9 @@
 </head>
 <body>
     <div class="language-selector">
-        <a href="{{ url_for('change_language', lang='en') }}" {% if session.get('language') == 'en' %}class="active"{% endif %}>English</a> |
-        <a href="{{ url_for('change_language', lang='hi') }}" {% if session.get('language') == 'hi' %}class="active"{% endif %}>हिंदी</a> |
-        <a href="{{ url_for('change_language', lang='te') }}" {% if session.get('language') == 'te' %}class="active"{% endif %}>తెలుగు</a>
+        <a href="{{ url_for('change_language', lang='en') }}" {% if session.get('language') == 'en' %}class="active"{% endif %}>{{ get_text('english') }}</a> |
+        <a href="{{ url_for('change_language', lang='hi') }}" {% if session.get('language') == 'hi' %}class="active"{% endif %}>{{ get_text('hindi') }}</a> |
+        <a href="{{ url_for('change_language', lang='te') }}" {% if session.get('language') == 'te' %}class="active"{% endif %}>{{ get_text('telugu') }}</a>
     </div>
 
     <div class="background-overlay"></div>

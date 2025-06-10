@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ get_text('post job') }}{% endblock %}
+{% block title %}{{ get_text('post_job') }}{% endblock %}
 
 {% block content %}
 <div class="post-job-container">
@@ -14,11 +14,11 @@
     {% endif %}
     {% endwith %}
 
-    <h2>📢 {{ get_text('post job') }}</h2>
+    <h2>📢 {{ get_text('post_job') }}</h2>
     <nav>
-        <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
-        <a href="{{ url_for('search_jobs') }}">{{ get_text('search jobs') }}</a> |
-        <a href="{{ url_for('saved_jobs') }}">{{ get_text('liked jobs') }}</a>
+        <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a> |
+        <a href="{{ url_for('search_jobs') }}">{{ get_text('search_jobs') }}</a> |
+        <a href="{{ url_for('saved_jobs') }}">{{ get_text('liked_jobs') }}</a>
     </nav>
     <form action="{{ url_for('post_job') }}" method="POST">
         <label for="title">{{ get_text('job_title') }}</label>
@@ -30,34 +30,34 @@
         </select>
 
         <label for="description">{{ get_text('job_description') }}</label>
-        <textarea name="description" id="description" rows="4" placeholder="{{ get_text('job description') }}"></textarea>
+        <textarea name="description" id="description" rows="4" placeholder="{{ get_text('job_description_placeholder') }}"></textarea>
 
         <label for="location">{{ get_text('job_location') }}</label>
-        <input type="text" name="location" id="location" required placeholder="{{ get_text('village town') }}">
+        <input type="text" name="location" id="location" required placeholder="{{ get_text('village_town_placeholder') }}">
 
         <label for="village_name">{{ get_text('village_name') }}</label>
-        <input type="text" name="village_name" id="village_name" placeholder="{{ get_text('village name') }}">
+        <input type="text" name="village_name" id="village_name" placeholder="{{ get_text('village_name_placeholder') }}">
 
         <label for="mandal_name">{{ get_text('mandal_name') }}</label>
-        <input type="text" name="mandal_name" id="mandal_name" placeholder="{{ get_text('mandal name') }}">
+        <input type="text" name="mandal_name" id="mandal_name" placeholder="{{ get_text('mandal_name_placeholder') }}">
 
         <label for="district">{{ get_text('district') }}</label>
-        <input type="text" name="district" id="district" placeholder="{{ get_text('district') }}">
+        <input type="text" name="district" id="district" placeholder="{{ get_text('district_placeholder') }}">
 
         <label for="pincode">{{ get_text('pincode') }}</label>
-        <input type="text" name="pincode" id="pincode" placeholder="{{ get_text('pincode') }}">
+        <input type="text" name="pincode" id="pincode" placeholder="{{ get_text('pincode_placeholder') }}">
 
         <label for="salary">{{ get_text('salary') }}</label>
-        <input type="text" name="salary" id="salary" required placeholder="{{ get_text('') }}">
+        <input type="text" name="salary" id="salary" required placeholder="{{ get_text('salary_placeholder') }}">
 
         <label for="phone_number">{{ get_text('contact_info') }}</label>
-        <input type="text" name="phone_number" id="phone_number" required placeholder="{{ get_text('') }}">
+        <input type="text" name="phone_number" id="phone_number" required placeholder="{{ get_text('contact_info_placeholder') }}">
 
         <label for="job_type">{{ get_text('job_type') }}</label>
         <select name="job_type" id="job_type" required>
-            <option value="" disabled selected>{{ get_text('select job type') }}</option>
-            <option value="full_time">{{ get_text('full time') }}</option>
-            <option value="part_time">{{ get_text('part time') }}</option>
+            <option value="" disabled selected>{{ get_text('select_job_type') }}</option>
+            <option value="full_time">{{ get_text('full_time') }}</option>
+            <option value="part_time">{{ get_text('part_time') }}</option>
             <option value="contract">{{ get_text('contract') }}</option>
         </select>
 

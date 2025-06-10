@@ -7,7 +7,7 @@
         <h2>{{ get_text('search_animals') }}</h2>
         <form method="POST" id="filterForm">
             <label for="search">{{ get_text('search_by') }}</label>
-            <input type="text" id="search" name="search" placeholder="{{ get_text('search by title description location') }}">
+            <input type="text" id="search" name="search" placeholder="{{ get_text('search_by_title_description_location') }}">
             
             <label for="category">{{ get_text('filter_by') }}</label>
             <select id="category" name="category">
@@ -20,32 +20,32 @@
                 <option value="horses">{{ get_text('horses') }}</option>
             </select>
 
-            <label for="sort">{{ get_text('sort by') }}</label>
+            <label for="sort">{{ get_text('sort_by') }}</label>
             <select id="sort" name="sort">
-                <option value="latest">{{ get_text('latest first') }}</option>
-                <option value="price_low">{{ get_text('price low to high') }}</option>
-                <option value="price_high">{{ get_text('price high to low') }}</option>
+                <option value="latest">{{ get_text('latest_first') }}</option>
+                <option value="price_low">{{ get_text('price_low_to_high') }}</option>
+                <option value="price_high">{{ get_text('price_high_to_low') }}</option>
             </select>
 
-            <button type="submit">{{ get_text('apply filters') }}</button>
+            <button type="submit">{{ get_text('apply_filters') }}</button>
         </form>
     </div>
 
     <div class="post-animal-section">
         <h2>{{ get_text('post_your_animal') }}</h2>
         <form action="{{ url_for('auction') }}" method="POST" enctype="multipart/form-data">
-            <label for="animal_category">{{ get_text('select animal') }}</label>
+            <label for="animal_category">{{ get_text('select_animal') }}</label>
             <select id="animal_category" name="animal_category" onchange="toggleCustomAnimalInput(this)" required>
-                <option value="">{{ get_text('choose_animal category') }}</option>
+                <option value="">{{ get_text('choose_animal_category') }}</option>
                 <option value="cows">{{ get_text('cows') }}</option>
                 <option value="buffaloes">{{ get_text('buffaloes') }}</option>
                 <option value="goats">{{ get_text('goats') }}</option>
                 <option value="sheep">{{ get_text('sheep') }}</option>
                 <option value="poultry">{{ get_text('poultry') }}</option>
                 <option value="horses">{{ get_text('horses') }}</option>
-                <option value="custom">{{ get_text('type manually') }}</option>
+                <option value="custom">{{ get_text('type_manually') }}</option>
             </select>
-            <input type="text" id="custom_animal_input" name="custom_animal" placeholder="{{ get_text('type animal name') }}" style="display: none;">
+            <input type="text" id="custom_animal_input" name="custom_animal" placeholder="{{ get_text('type_animal_name') }}" style="display: none;">
 
             <label for="animal_age">{{ get_text('animal_age') }} ({{ get_text('optional') }})</label>
             <input type="number" 
@@ -53,13 +53,13 @@
                    name="animal_age" 
                    min="0" 
                    max="100"
-                   placeholder="{{ get_text('') }}">
+                   placeholder="{{ get_text('animal_age_placeholder') }}">
 
             <label for="animal_breed">{{ get_text('breed') }} ({{ get_text('optional') }})</label>
             <input type="text" 
                    id="animal_breed" 
                    name="animal_breed" 
-                   placeholder="{{ get_text('') }}">
+                   placeholder="{{ get_text('breed_placeholder') }}">
 
             <label for="animal_weight">{{ get_text('weight_kg') }}</label>
             <input type="number" id="animal_weight" name="animal_weight" required>
@@ -68,10 +68,10 @@
             <input type="number" id="animal_cost" name="animal_cost" required>
 
             <label for="animal_description">{{ get_text('description') }}</label>
-            <textarea id="animal_description" name="animal_description" rows="4"></textarea>
+            <textarea id="animal_description" name="animal_description" rows="4" placeholder="{{ get_text('description_placeholder') }}"></textarea>
 
             <label for="animal_location">{{ get_text('location') }}</label>
-            <input type="text" id="animal_location" name="animal_location" required>
+            <input type="text" id="animal_location" name="animal_location" required placeholder="{{ get_text('location_placeholder') }}">
 
             <label for="animal_photos">{{ get_text('upload_photos') }}</label>
             <input type="file" id="animal_photos" name="animal_photos[]" accept="image/*" multiple required>
@@ -86,7 +86,7 @@
                        maxlength="10" 
                        minlength="10"
                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                       placeholder="Enter 10 digit number" 
+                       placeholder="{{ get_text('enter_10_digit_number') }}" 
                        required>
             </div>
 
@@ -106,7 +106,7 @@
                     <p>{{ get_text('location') }}: {{ animal.location }}</p>
                     <p>{{ get_text('age') }}: {{ animal.age }} {{ get_text('years') }}</p>
                     <p>{{ get_text('weight') }}: {{ animal.weight }}kg</p>
-                    <a href="tel:{{ animal.contact_number }}">{{ get_text('call seller') }}</a>
+                    <a href="tel:{{ animal.contact_number }}">{{ get_text('call_seller') }}</a>
                 </div>
             </div>
             {% endfor %}

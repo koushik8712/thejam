@@ -11,26 +11,26 @@
 
         <div class="profile-details">
             <p><strong>{{ get_text('username') }}:</strong> {{ user['username'] }}</p>
-            <p><strong>{{ get_text('phone number') }}:</strong> {{ user['phone_number'] }}</p>
-            <p><strong>{{ get_text('gender') }}:</strong> {{ user['gender'] if user['gender'] else get_text('not specified') }}</p>
+            <p><strong>{{ get_text('phone_number') }}:</strong> {{ user['phone_number'] }}</p>
+            <p><strong>{{ get_text('gender') }}:</strong> {{ user['gender'] if user['gender'] else get_text('not_specified') }}</p>
             <p><strong>{{ get_text('bio') }}:</strong> {{ user['bio'] if user['bio'] else get_text('no_bio') }}</p>
-            <p><strong>{{ get_text('location') }}:</strong> {{ user['location'] if user['location'] else get_text('no location') }}</p>
+            <p><strong>{{ get_text('location') }}:</strong> {{ user['location'] if user['location'] else get_text('no_location') }}</p>
         </div>
 
         <div class="profile-image">
             {% if user['profile_picture'] %}
                 {% if user['profile_picture'] in avatars %}
-                    <img src="{{ url_for('static', filename='avatars/' + user['profile_picture']) }}" alt="Avatar">
+                    <img src="{{ url_for('static', filename='avatars/' + user['profile_picture']) }}" alt="{{ get_text('avatar') }}">
                 {% else %}
-                    <img src="{{ url_for('static', filename='uploads/' + user['profile_picture']) }}" alt="Uploaded Picture">
+                    <img src="{{ url_for('static', filename='uploads/' + user['profile_picture']) }}" alt="{{ get_text('uploaded_picture') }}">
                 {% endif %}
             {% else %}
-                <img src="{{ url_for('static', filename='default_profile.png') }}" alt="Default">
+                <img src="{{ url_for('static', filename='default_profile.png') }}" alt="{{ get_text('default') }}">
             {% endif %}
         </div>
 
         <a href="{{ url_for('dashboard') }}" class="back-link">
-            <button class="action-btn">{{ get_text('back to dashboard') }}</button>
+            <button class="action-btn">{{ get_text('back_to_dashboard') }}</button>
         </a>
 
         <a href="{{ url_for('logout') }}" class="logout-link">

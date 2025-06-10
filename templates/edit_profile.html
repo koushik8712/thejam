@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}{{ get_text('edit profile') }}{% endblock %}
+{% block title %}{{ get_text('edit_profile') }}{% endblock %}
 
 {% block content %}
     <div class="register-container">
-        <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a>
+        <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a>
 
-        <h1>{{ get_text('edit profile') }}</h1>
+        <h1>{{ get_text('edit_profile') }}</h1>
         <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data">
-            <label>{{ get_text('full name') }}:</label>
+            <label>{{ get_text('full_name') }}:</label>
             <input type="text" name="full_name" value="{{ user['full_name'] }}" required>
 
-            <label>{{ get_text('phone number') }}:</label>
+            <label>{{ get_text('phone_number') }}:</label>
             <input type="text" name="phone_number" value="{{ user['phone_number'] }}" required>
 
             <label>{{ get_text('gender') }}:</label>
@@ -20,7 +20,7 @@
                     <input type="radio" id="female" name="gender" value="Female" class="i_female" 
                            {% if user['gender'] == 'Female' %}checked{% endif %} required>
                     <div class="card female">
-                        <div class="logo">♀</div>
+                        <div class="logo">{{ get_text('female_icon') }}</div>
                         <div class="title">{{ get_text('female') }}</div>
                     </div>
                 </label>
@@ -28,7 +28,7 @@
                     <input type="radio" id="male" name="gender" value="Male" class="i_male" 
                            {% if user['gender'] == 'Male' %}checked{% endif %} required>
                     <div class="card male">
-                        <div class="logo">♂</div>
+                        <div class="logo">{{ get_text('male_icon') }}</div>
                         <div class="title">{{ get_text('male') }}</div>
                     </div>
                 </label>
@@ -36,19 +36,19 @@
                     <input type="radio" id="no-gender" name="gender" value="Other" class="i_no-gender" 
                            {% if user['gender'] == 'Other' %}checked{% endif %} required>
                     <div class="card no-gender">
-                        <div class="logo">⚧</div>
+                        <div class="logo">{{ get_text('other_icon') }}</div>
                         <div class="title">{{ get_text('other') }}</div>
                     </div>
                 </label>
             </div>
 
             <label>{{ get_text('bio') }}:</label>
-            <textarea name="bio">{{ user['bio'] }}</textarea>
+            <textarea name="bio" placeholder="{{ get_text('bio_placeholder') }}">{{ user['bio'] }}</textarea>
 
             <label>{{ get_text('location') }}:</label>
-            <input type="text" name="location" value="{{ user['location'] }}">
+            <input type="text" name="location" value="{{ user['location'] }}" placeholder="{{ get_text('location_placeholder') }}">
 
-            <label>{{ get_text('choose new avatar') }}:</label>
+            <label>{{ get_text('choose_new_avatar') }}:</label>
             <div class="avatar-container">
                 {% for avatar in avatars %}
                 <div class="avatar-option" onclick="selectAvatar('{{ avatar }}', this)">
@@ -58,13 +58,13 @@
             </div>
             <input type="hidden" name="avatar_choice" id="avatar_choice">
 
-            <label>{{ get_text('upload new picture') }}:</label>
+            <label>{{ get_text('upload_new_picture') }}:</label>
             <input type="file" name="avatar_file" id="avatar_file" accept="image/*" onchange="previewImage(event)">
-            <img id="custom-preview" class="preview-image" alt="{{ get_text('uploaded preview') }}">
+            <img id="custom-preview" class="preview-image" alt="{{ get_text('uploaded_preview') }}">
 
-            <button type="submit">{{ get_text('save changes') }}</button>
+            <button type="submit">{{ get_text('save_changes') }}</button>
         </form>
-        <a href="{{ url_for('profile') }}">{{ get_text('back to profile') }}</a>
+        <a href="{{ url_for('profile') }}">{{ get_text('back_to_profile') }}</a>
     </div>
 
     <script>
