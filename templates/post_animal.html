@@ -1,22 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}{{ get_text('post_animal') }}{% endblock %}
+{% block title %}{{ get_text('post animal') }}{% endblock %}
 
 {% block content %}
 <div class="container">
     <nav>
-        <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a> |
-        <a href="{{ url_for('search_animals') }}">{{ get_text('search_animals') }}</a> |
-        <a href="{{ url_for('saved_animals') }}">{{ get_text('saved_animals') }}</a>       |
+        <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
+        <a href="{{ url_for('search_animals') }}">{{ get_text('search animals') }}</a> |
+        <a href="{{ url_for('saved_animals') }}">{{ get_text('saved animals') }}</a>       |
     </nav>
 
     <div class="post-form-container">
-        <h2>{{ get_text('sell_animals') }}</h2>
+        <h2>{{ get_text('sell animals') }}</h2>
         <form action="{{ url_for('post_animal') }}" method="POST" enctype="multipart/form-data" id="animalForm">
             <div class="form-group">
-                <label for="animal_category">{{ get_text('select_animal') }}*</label>
+                <label for="animal_category">{{ get_text('select animal') }}*</label>
                 <select id="animal_category" name="animal_category" required onchange="toggleOtherAnimalField()">
-                    <option value="">{{ get_text('choose_animal_category') }}</option>
+                    <option value="">{{ get_text('choose animal category') }}</option>
                     <option value="cows">{{ get_text('cows') }}</option>
                     <option value="buffaloes">{{ get_text('buffaloes') }}</option>
                     <option value="goats">{{ get_text('goats') }}</option>
@@ -28,15 +28,15 @@
             </div>
 
             <div class="form-group" id="other-animal-group" style="display: none;">
-                <label for="other_animal">{{ get_text('specify_animal') }}</label>
-                <input type="text" id="other_animal" name="other_animal" placeholder="{{ get_text('enter_animal_name') }}">
+                <label for="other_animal">{{ get_text('specify animal') }}</label>
+                <input type="text" id="other_animal" name="other_animal" placeholder="{{ get_text('enter animal name') }}">
             </div>
 
             <div class="form-group image-upload-section">
-                <label>{{ get_text('upload_photos') }} ({{ get_text('max_4_photos') }})</label>
+                <label>{{ get_text('upload photos') }} ({{ get_text('max 4 photos') }})</label>
                 <div class="image-preview-container" id="preview-container">
                     <div class="upload-box" onclick="document.getElementById('photo-input').click()">
-                        <span>{{ get_text('plus_icon') }}</span>
+                        <span>{{ get_text('plus icon') }}</span>
                     </div>
                     <input type="file" id="photo-input" name="animal_photos" accept="image/*" multiple 
                            style="display: none" onchange="handleImageUpload(event)">
@@ -45,54 +45,54 @@
 
             <div class="form-group">
                 <label for="animal_age">{{ get_text('age') }} ({{ get_text('optional') }})</label>
-                <input type="number" id="animal_age" name="animal_age" min="0" placeholder="{{ get_text('age_placeholder') }}">
+                <input type="number" id="animal_age" name="animal_age" min="0" placeholder="{{ get_text('age placeholder') }}">
             </div>
 
             <div class="form-group">
                 <label for="animal_breed">{{ get_text('breed') }} ({{ get_text('optional') }})</label>
-                <input type="text" id="animal_breed" name="animal_breed" placeholder="{{ get_text('breed_placeholder') }}">
+                <input type="text" id="animal_breed" name="animal_breed" placeholder="{{ get_text('breed placeholder') }}">
             </div>
 
             <div class="form-group">
                 <label for="animal_weight">{{ get_text('weight') }}({{ get_text('kg') }})</label>
-                <input type="number" id="animal_weight" name="animal_weight" required min="0" placeholder="{{ get_text('weight_placeholder') }}">
+                <input type="number" id="animal_weight" name="animal_weight" required min="0" placeholder="{{ get_text('weight placeholder') }}">
             </div>
 
             <div class="form-group">
                 <label for="animal_cost">{{ get_text('price') }}</label>
-                <input type="number" id="animal_cost" name="animal_cost" required min="0" placeholder="{{ get_text('price_placeholder') }}">
+                <input type="number" id="animal_cost" name="animal_cost" required min="0" placeholder="{{ get_text('price placeholder') }}">
             </div>
 
             <div class="form-group">
                 <label for="animal_location">{{ get_text('location') }}</label>
-                <input type="text" id="animal_location" name="animal_location" required placeholder="{{ get_text('location_placeholder') }}">
+                <input type="text" id="animal_location" name="animal_location" required placeholder="{{ get_text('location placeholder') }}">
             </div>
             
             <div class="form-group">
-                <label for="village_name">{{ get_text('village_name') }}</label>
-                <input type="text" id="village_name" name="village_name" placeholder="{{ get_text('village_name_placeholder') }}">
+                <label for="village_name">{{ get_text('village name') }}</label>
+                <input type="text" id="village_name" name="village_name" placeholder="{{ get_text('village name placeholder') }}">
             </div>
             
             <div class="form-group">
-                <label for="mandal_name">{{ get_text('mandal_name') }}</label>
-                <input type="text" id="mandal_name" name="mandal_name" placeholder="{{ get_text('mandal_name_placeholder') }}">
+                <label for="mandal_name">{{ get_text('mandal name') }}</label>
+                <input type="text" id="mandal_name" name="mandal_name" placeholder="{{ get_text('mandal name placeholder') }}">
             </div>
             
             <div class="form-group">
                 <label for="district">{{ get_text('district') }}</label>
-                <input type="text" id="district" name="district" placeholder="{{ get_text('district_placeholder') }}">
+                <input type="text" id="district" name="district" placeholder="{{ get_text('district placeholder') }}">
             </div>
             
             <div class="form-group">
                 <label for="pincode">{{ get_text('pincode') }}</label>
-                <input type="text" id="pincode" name="pincode" placeholder="{{ get_text('pincode_placeholder') }}">
+                <input type="text" id="pincode" name="pincode" placeholder="{{ get_text('pincode placeholder') }}">
             </div>
             
             <div class="form-group">
-                <label for="contact_number">{{ get_text('contact_number') }}</label>
+                <label for="contact_number">{{ get_text('contact number') }}</label>
                 <input type="tel" id="contact_number" name="contact_number" 
                        pattern="[0-9]{10}" maxlength="10" required 
-                       placeholder="{{ get_text('contact_number_placeholder') }}">
+                       placeholder="{{ get_text('contact number placeholder') }}">
             </div>
             
             <button type="submit">{{ get_text('submit') }}</button>

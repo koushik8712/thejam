@@ -336,9 +336,8 @@ def edit_profile():
     user_id = session['user_id']
     with get_db_connection() as conn:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-        if request.method == 'POST':
-            try:
+        try:
+            if request.method == 'POST':
                 full_name = request.form.get('full_name')
                 phone_number = request.form.get('phone_number')
                 gender = request.form.get('gender')
@@ -369,27 +368,20 @@ def edit_profile():
                 flash("Profile updated successfully!", "success")
                 cursor.close()
                 return redirect(url_for('profile'))
-            except Exception as e:
-                app.logger.error(f"Error updating profile: {str(e)}")
-                flash("An error occurred while updating your profile. Please try again.", "danger")
-                cursor.close()
-                return redirect(url_for('edit_profile'))
 
-        try:
             cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
             user = cursor.fetchone()
             if not user:
                 flash("User not found. Please contact support.", "danger")
                 cursor.close()
                 return redirect(url_for('dashboard'))
+            cursor.close()
+            return render_template('edit_profile.html', user=user, avatars=AVATARS)
         except Exception as e:
-            app.logger.error(f"Error fetching user data: {str(e)}")
-            flash("An error occurred while fetching your profile. Please try again later.", "danger")
+            app.logger.error(f"Edit profile error: {str(e)}")
+            flash("An error occurred while updating or fetching your profile. Please try again.", "danger")
             cursor.close()
             return redirect(url_for('dashboard'))
-        cursor.close()
-
-    return render_template('edit_profile.html', user=user, avatars=AVATARS)
 
 @app.route('/post_job', methods=['GET', 'POST'])
 def post_job():

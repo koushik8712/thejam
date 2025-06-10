@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="login-container">
-    <h1>{{ get_text('welcome_icon') }}</h1>
+    <h1>{{ get_text('welcome icon') }}</h1>
     
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -18,7 +18,7 @@
 
     <form action="{{ url_for('login') }}" method="POST" class="login-form">
         <div class="input-group">
-            <input type="text" name="login_id" placeholder="{{ get_text('enter_username_or_phone_number') }}" required>
+            <input type="text" name="login_id" placeholder="{{ get_text('enter username or phone number') }}" required>
         </div>
         <div class="input-group">
             <input type="password" name="password" placeholder="{{ get_text('password') }}" required>
@@ -26,7 +26,7 @@
         <button type="submit">{{ get_text('login') }}</button>
     </form>
     
-    <p class="register-link">{{ get_text('no_account') }} <a href="{{ url_for('register') }}">{{ get_text('register') }}</a></p>
-    <p class="forgot-link"><a href="{{ url_for('forgot_password') }}">{{ get_text('forgot_password_link') }}</a></p>
+    <p class="register-link">{{ get_text('no account') }} <a href="{{ url_for('register') }}">{{ get_text('register') }}</a></p>
+    <p class="forgot-link"><a href="{{ url_for('forgot password link') }}">{{ get_text('forgot password link') }}</a></p>
 </div>
 {% endblock %}

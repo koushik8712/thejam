@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}{{ get_text('liked_jobs') }}{% endblock %}
+{% block title %}{{ get_text('liked jobs') }}{% endblock %}
 
 {% block content %}
 <div class="container">
     <nav>
-        <a href="{{ url_for('dashboard') }}">← {{ get_text('back_to_dashboard') }}</a> |
-        <a href="{{ url_for('post_job') }}">{{ get_text('post_job') }}</a> |
-        <a href="{{ url_for('search_jobs') }}">{{ get_text('search_jobs') }}</a>
+        <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
+        <a href="{{ url_for('post_job') }}">{{ get_text('post job') }}</a> |
+        <a href="{{ url_for('search_jobs') }}">{{ get_text('search jobs') }}</a>
     </nav>
 
-    <h2>{{ get_text('liked_jobs') }}</h2>
+    <h2>{{ get_text('liked jobs') }}</h2>
 
     {% if saved_jobs %}
         <div class="jobs-wrapper">
@@ -18,21 +18,21 @@
                 <div class="job-card">
                     <div class="job-card-content">
                         <h3>{{ job.title }}</h3>
-                        <p><strong>{{ get_text('job_description') }}:</strong> {{ job.description }}</p>
-                        <p><strong>{{ get_text('job_location') }}:</strong> {{ job.location }}</p>
-                        <p><strong>{{ get_text('phone_number') }}:</strong> {{ job.phone_number }}</p>
-                        <p><strong>{{ get_text('salary') }}:</strong> {{ job.salary or get_text('not_specified') }}</p>
-                        <p><strong>{{ get_text('job_type') }}:</strong> {{ get_text(job.job_type) }}</p>
-                        <p><strong>{{ get_text('posted_by') }}:</strong> 
-                            <img src="{{ url_for('static', filename='avatars/' + job.profile_picture) }}" alt="{{ get_text('profile_picture') }}" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle;">
+                        <p><strong>{{ get_text('job description') }}:</strong> {{ job.description }}</p>
+                        <p><strong>{{ get_text('job location') }}:</strong> {{ job.location }}</p>
+                        <p><strong>{{ get_text('phone number') }}:</strong> {{ job.phone_number }}</p>
+                        <p><strong>{{ get_text('salary') }}:</strong> {{ job.salary or get_text('not specified') }}</p>
+                        <p><strong>{{ get_text('job type') }}:</strong> {{ get_text(job.job_type) }}</p>
+                        <p><strong>{{ get_text('posted by') }}:</strong> 
+                            <img src="{{ url_for('static', filename='avatars/' + job.profile_picture) }}" alt="{{ get_text('profile picture') }}" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle;">
                             {{ job.full_name }}
                         </p>
-                        <p><strong>{{ get_text('saved_on') }}:</strong> {{ job.saved_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
+                        <p><strong>{{ get_text('saved on') }}:</strong> {{ job.saved_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
                     </div>
                     <div class="job-card-actions">
-                        <a href="https://www.google.com/maps/search/?api=1&query={{ job.location }}, {{ job.village_name }}, {{ job.mandal_name }}, {{ job.district }}, {{ job.pincode }}" target="_blank">{{ get_text('view_on_map') }}</a>
-                        <a href="https://wa.me/+91{{ job.phone_number }}?text={{ get_text('hello_interested_in_job') }} {{ job.title }}" target="_blank">{{ get_text('contact_on_whatsapp') }}</a>
-                        <a href="sms:+91{{ job.phone_number }}?body={{ get_text('hello_interested_in_job') }} {{ job.title }}">{{ get_text('contact_via_sms') }}</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ job.location }}, {{ job.village_name }}, {{ job.mandal_name }}, {{ job.district }}, {{ job.pincode }}" target="_blank">{{ get_text('view on map') }}</a>
+                        <a href="https://wa.me/+91{{ job.phone_number }}?text={{ get_text('hello interested in job') }} {{ job.title }}" target="_blank">{{ get_text('contact on whatsapp') }}</a>
+                        <a href="sms:+91{{ job.phone_number }}?body={{ get_text('hello interested in job') }} {{ job.title }}">{{ get_text('contact via sms') }}</a>
                         <label class="ui-bookmark">
                             <input type="checkbox" data-job-id="{{ job.id }}" checked>
                             <div class="bookmark">
@@ -54,7 +54,7 @@
             {% endfor %}
         </div>
     {% else %}
-        <p>{{ get_text('no_jobs_found_save_some_to_appear') }}</p>
+        <p>{{ get_text('no jobs found save some to appear') }}</p>
     {% endif %}
 </div>
 

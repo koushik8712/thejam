@@ -6,12 +6,12 @@
     <div class="register-container">
         <h1>{{ get_text('welcome') }}</h1>
         <form action="{{ url_for('register') }}" method="POST" enctype="multipart/form-data">
-            <label for="full_name">{{ get_text('full_name') }} </label>
+            <label for="full_name">{{ get_text('full name') }} </label>
             <input type="text" id="full_name" name="full_name" required 
                    value="{{ form_data.full_name or '' }}"
                   >
 
-            <label for="phone_number">{{ get_text('phone_number') }} </label>
+            <label for="phone_number">{{ get_text('phone number') }} </label>
             <input type="text" 
                    id="phone_number" 
                    name="phone_number" 
@@ -20,7 +20,7 @@
                    pattern="[0-9]{10}" 
                    maxlength="10"
                    oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
-                   placeholder="{{ get_text('phone_placeholder') }}">
+                   placeholder="{{ get_text('phone placeholder') }}">
 
             <label for="username">{{ get_text('username') }} </label>
             <input type="text" id="username" name="username" required 
@@ -28,10 +28,10 @@
                  >
 
             <label for="password">{{ get_text('password') }} </label>
-            <input type="password" id="password" name="password" required placeholder="{{ get_text('password_placeholder') }}">
+            <input type="password" id="password" name="password" required placeholder="{{ get_text('password placeholder') }}">
 
-            <label for="confirm_password">{{ get_text('confirm_password') }} </label>
-            <input type="password" id="confirm_password" name="confirm_password" required placeholder="{{ get_text('confirm_password_placeholder') }}">
+            <label for="confirm_password">{{ get_text('confirm password') }} </label>
+            <input type="password" id="confirm_password" name="confirm_password" required placeholder="{{ get_text('confirm password placeholder') }}">
 
             
             <label for="gender">{{ get_text('gender') }}:</label>
@@ -39,34 +39,34 @@
                 <label>
                     <input type="radio" id="female" name="gender" value="Female" class="i_female" required>
                     <div class="card female">
-                        <div class="logo">{{ get_text('female_icon') }}</div>
+                        <div class="logo">{{ get_text('female icon') }}</div>
                         <div class="title">{{ get_text('female') }}</div>
                     </div>
                 </label>
                 <label>
                     <input type="radio" id="male" name="gender" value="Male" class="i_male" required>
                     <div class="card male">
-                        <div class="logo">{{ get_text('male_icon') }}</div>
+                        <div class="logo">{{ get_text('male icon') }}</div>
                         <div class="title">{{ get_text('male') }}</div>
                     </div>
                 </label>
                 <label>
                     <input type="radio" id="no-gender" name="gender" value="Other" class="i_no-gender" required>
                     <div class="card no-gender">
-                        <div class="logo">{{ get_text('other_icon') }}</div>
+                        <div class="logo">{{ get_text('other icon') }}</div>
                         <div class="title">{{ get_text('other') }}</div>
                     </div>
                 </label>
             </div>
 
             <label for="bio">{{ get_text('bio') }}</label>
-            <textarea id="bio" name="bio" rows="4" style="resize: vertical;" placeholder="{{ get_text('bio_placeholder') }}"></textarea>
+            <textarea id="bio" name="bio" rows="4" style="resize: vertical;" placeholder="{{ get_text('bio placeholder') }}"></textarea>
 
             <label for="location">{{ get_text('location') }}</label>
-            <input type="text" id="location" name="location" placeholder="{{ get_text('location_placeholder') }}">
+            <input type="text" id="location" name="location" placeholder="{{ get_text('location placeholder') }}">
 
 
-            <label>{{ get_text('choose_avatar') }}</label>
+            <label>{{ get_text('choose avatar') }}</label>
             <div class="avatar-container">
                 {% for avatar in avatars %}
                 <div class="avatar-option" onclick="selectAvatar('{{ avatar }}', this)">
@@ -76,12 +76,12 @@
             </div>
             <input type="hidden" name="avatar_choice" id="avatar_choice">
 
-            <label>{{ get_text('upload_avatar') }}</label>
+            <label>{{ get_text('upload avatar') }}</label>
             <input type="file" name="avatar_file" id="avatar_file" accept="image/*" onchange="previewImage(event)">
-            <img id="custom-preview" class="preview-image" alt="{{ get_text('uploaded_preview') }}">
+            <img id="custom-preview" class="preview-image" alt="{{ get_text('uploaded preview') }}">
 
             <button type="submit">{{ get_text('submit') }}</button>
-            <p class="register-link">{{ get_text('have_account') }} <a href="{{ url_for('home') }}">{{ get_text('login') }}</a></p>
+            <p class="register-link">{{ get_text('have account') }} <a href="{{ url_for('home') }}">{{ get_text('login') }}</a></p>
         </form>
     </div>
 
