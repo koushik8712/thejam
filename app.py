@@ -367,23 +367,27 @@ def edit_profile():
                 cursor.execute(update_query, tuple(data))
                 conn.commit()
                 flash("Profile updated successfully!", "success")
+                cursor.close()
                 return redirect(url_for('profile'))
             except Exception as e:
                 app.logger.error(f"Error updating profile: {str(e)}")
                 flash("An error occurred while updating your profile. Please try again.", "danger")
+                cursor.close()
+                return redirect(url_for('edit_profile'))
 
         try:
             cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
             user = cursor.fetchone()
             if not user:
                 flash("User not found. Please contact support.", "danger")
+                cursor.close()
                 return redirect(url_for('dashboard'))
         except Exception as e:
             app.logger.error(f"Error fetching user data: {str(e)}")
             flash("An error occurred while fetching your profile. Please try again later.", "danger")
-            return redirect(url_for('dashboard'))
-        finally:
             cursor.close()
+            return redirect(url_for('dashboard'))
+        cursor.close()
 
     return render_template('edit_profile.html', user=user, avatars=AVATARS)
 
@@ -767,8 +771,8 @@ def reset_password(token):
 
 @app.route('/logout')
 def logout():
-    session.clear()
     flash("Logged out successfully!", "info")
+    session.clear()
     return redirect(url_for('home'))  
 
 @app.route('/save_job/<int:job_id>', methods=['POST'])
@@ -908,13 +912,6 @@ def not_found_error(error):
 
 @app.errorhandler(500)
 def internal_error(error):
-    try:
-        db = get_db_connection()
-        db.rollback()
-        db.close()
-    except Exception as e:
-        app.logger.error(f"Error handling 500 error: {str(e)}")
-    
     app.logger.error('Server Error: %s', str(error))
     app.logger.error(traceback.format_exc())
     return render_template('errors/500.html'), 500

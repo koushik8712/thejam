@@ -141,5 +141,22 @@
   "reset_search": "Reset Search",
   "select_filter": "Select Filter",
   "category": "Category",
-  "select_category": "Select Category"
+ "date_posted": "Date Posted",
+  "select_category": "Select Category",
+  "view on_map": "View on Map",
+"contact_on_whatsapp": "Contact on WhatsApp",
+"contact via sms":"contact via SMS",
+  "hello_interested_in_job": "Hello, I am interested in your job posting:",
+  "posted_by": "Posted By",
+  "profile_picture": "Profile Picture",
+  "posted_on": "Posted On",
+  "no_jobs_found": "No jobs found",
+  "no_jobs_found_save_some_to_appear": "No jobs found. Save some to appear.",
+  "no_saved_animals": "No saved animals",
+  "min_price": "Min Price",
+  "enter_min_price": "Enter minimum price",
+  "max_price": "Max Price",
+  "enter_max_price": "Enter maximum price",
+  "select_sort": "Select Sort",
+  "saved_on": "Saved On"
 }

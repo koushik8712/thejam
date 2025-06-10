@@ -118,21 +118,6 @@
   "village_name_placeholder": "గ్రామం పేరు నమోదు చేయండి",
   "mandal_name": "మండలం పేరు",
   "mandal_name_placeholder": "మండలం పేరు నమోదు చేయండి",
-  "district_placeholder": "జిల్లా నమోదు చేయండి",
-  "pincode_placeholder": "పిన్‌కోడ్ నమోదు చేయండి",
-  "contact_number_placeholder": "సంప్రదింపు నంబర్ నమోదు చేయండి",
-  "job_description_placeholder": "ఉద్యోగాన్ని వివరించండి",
-  "village_town_placeholder": "గ్రామం/నగరం",
-  "salary_placeholder": "జీతం నమోదు చేయండి",
-  "contact_info": "సంప్రదింపు సమాచారం",
-  "contact_info_placeholder": "సంప్రదింపు నంబర్ నమోదు చేయండి",
-  "select_job_type": "ఉద్యోగ రకం ఎంచుకోండి",
-  "full_time": "పూర్తి సమయం",
-  "part_time": "భాగ-time",
-  "contract": "ఒప్పందం",
-  "select_job": "ఉద్యోగాన్ని ఎంచుకోండి",
-  "posted_on": "జారీ చేసిన తేదీ",
-  "no_jobs_found": "ఏ ఉద్యోగాలూ లేవు",
-  "no_jobs_found_save_some_to_appear": "ఏ ఉద్యోగాలూ లేవు. ప్రదర్శనకు కొన్నింటిని సేవ్ చేయండి.",
-  "no_saved_animals": "సేవ్ చేసిన జంతువులు లేవు"
+  "district": "జిలా",
+  "district_placeholder": "జిలా నమోదు చేయండి"
 }
