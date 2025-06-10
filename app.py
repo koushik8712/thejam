@@ -334,7 +334,6 @@ def edit_profile():
         return redirect(url_for('home'))
 
     user_id = session['user_id']
-    user = None
     with get_db_connection() as conn:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
