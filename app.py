@@ -93,7 +93,10 @@ def utility_processor():
         translations = load_translations(lang)
         text = translations.get(key, key)
         if args or kwargs:
-            return text % (args or kwargs)
+            try:
+                return text.format(*args, **kwargs)
+            except Exception:
+                return text  # fallback if formatting fails
         return text
 
     saved_count = 0
