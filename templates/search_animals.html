@@ -85,7 +85,7 @@
                         {% if animal.photos.split(',')|length > 1 %}
                             <span class="more-photos">+{{ animal.photos.split(',')|length - 1 }}</span>
                         {% endif %}
-                        <p class="tap-note">{{ get_text('tap_photo_to_view') }}</p>
+                        <p class="tap-note">{{ get_text('tap photo to view') }}</p>
                     </div>
                     <h3>{{ animal.category }}{% if animal.breed %} - {{ animal.breed }}{% endif %}</h3>
                     <p><strong>{{ get_text('price') }}:</strong> ₹{{ animal.cost }}</p>
@@ -94,19 +94,19 @@
                         <p><strong>{{ get_text('age') }}:</strong> {{ animal.age }} {{ get_text('years') }}</p>
                     {% endif %}
                     <p><strong>{{ get_text('weight') }}:</strong> {{ animal.weight }}kg</p>
-                    <p><strong>{{ get_text('posted_by') }}:</strong> 
+                    <p><strong>{{ get_text('posted by') }}:</strong> 
                         <img src="{{ url_for('static', filename='avatars/' + animal.profile_picture) }}" 
-                             alt="{{ get_text('profile_picture') }}" 
+                             alt="{{ get_text('profil picture') }}" 
                              style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle;">
                         {{ animal.full_name }}
                     </p>
                 </div>
                 
                 <div class="job-card-actions">
-                    <a href="https://wa.me/+91{{ animal.contact_number }}?text={{ get_text('interested_in_animal') }} {{ animal.category }}" 
-                       target="_blank">{{ get_text('contact_on_whatsapp') }}</a>
-                    <a href="sms:+91{{ animal.contact_number }}?body={{ get_text('interested_in_animal') }} {{ animal.category }}">
-                        {{ get_text('contact_via_sms') }}</a>
+                    <a href="https://wa.me/+91{{ animal.contact_number }}?text={{ get_text('interested in animal') }} {{ animal.category }}" 
+                       target="_blank">{{ get_text('contact on whatsapp') }}</a>
+                    <a href="sms:+91{{ animal.contact_number }}?body={{ get_text('interested in animal') }} {{ animal.category }}">
+                        {{ get_text('contact via sms') }}</a>
                     <label class="ui-bookmark">
                         <input type="checkbox" data-animal-id="{{ animal.id }}" 
                                {% if animal.id in saved_animals %}checked{% endif %}>

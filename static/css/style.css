@@ -627,62 +627,23 @@ button:active, .edit-profile-btn:active, .logout-btn:active {
     background-color: #fffd82;
 }
 
-.animal-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.2s;
-}
-
-.animal-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-.listings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.animal-info {
-    padding: 15px;
-}
-
-.animal-info a {
-    display: block;
-    margin-top: 10px;
-    text-align: center;
-    background-color: #4CAF50;
-    color: white;
-    text-decoration: none;
-    padding: 10px;
-    border-radius: 5px;
-}
-
-.error-container {
-    text-align: center;
-    padding: 50px 20px;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.error-container h1 {
-    color: #bf591e;
-    margin-bottom: 20px;
-}
-
-.error-container a {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #bf591e;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-}
-
-.edit-profile-container {
-    background-color: rgba(253, 242, 203, 0.9);
+.container,
+.dashboard-container,
+.post-job-container,
+.post-animal-container,
+.profile-container,
+.register-container,
+.login-container,
+.filter-container,
+.flash-messages,
+.jobs-wrapper,
+.animals-wrapper,
+.job-card,
+.animal-card,
+.profile-box,
+.post-form-container,
+.animal-listings,
+.post-animal-section,
+.post-form-container {
+    background-color: #f2e2ba !important;
 }
