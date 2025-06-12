@@ -103,6 +103,7 @@
                 </div>
                 
                 <div class="job-card-actions">
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ animal.location }}" target="_blank">{{ get_text('view on map') }}</a>
                     <a href="https://wa.me/+91{{ animal.contact_number }}?text={{ get_text('interested in animal') }} {{ animal.category }}" 
                        target="_blank">{{ get_text('contact on whatsapp') }}</a>
                     <a href="sms:+91{{ animal.contact_number }}?body={{ get_text('interested in animal') }} {{ animal.category }}">

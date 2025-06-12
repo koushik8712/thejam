@@ -4,6 +4,15 @@
 
 {% block content %}
 <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+        <p class="{{ category }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
     <nav>
         <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
         <a href="{{ url_for('search_animals') }}">{{ get_text('search animals') }}</a> |

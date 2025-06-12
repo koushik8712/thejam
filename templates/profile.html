@@ -4,6 +4,15 @@
 
 {% block content %}
 <div class="profile-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+        <p class="{{ category }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
     <div class="profile-box">
         <h2 style="color: rgb(191, 89, 30); margin-bottom: 20px;">
             🌾 {{ get_text('welcome user', user['full_name'] if user else 'Guest') }} 🌾
