@@ -755,7 +755,8 @@ def reset_password(token):
             reset = cursor.fetchone()
             
             if reset:
-                hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
+                # Ensure password is stored as utf-8 string, not bytes
+                hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode('utf-8')
                 cursor.execute(
                     "UPDATE users SET password = %s WHERE id = %s",
                     (hashed_password, reset['user_id'])
