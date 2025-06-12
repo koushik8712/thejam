@@ -126,6 +126,8 @@ def login():
             login_id = request.form['login_id']
             password = request.form['password']
 
+            app.logger.info(f"Login attempt for: {login_id}")
+
             with get_db_connection() as conn:
                 cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                 cursor.execute("SELECT * FROM users WHERE username = %s OR phone_number = %s", 
@@ -133,12 +135,24 @@ def login():
                 user = cursor.fetchone()
                 cursor.close()
 
-                if user and bcrypt.checkpw(password.encode(), user['password'].encode()):
-                    session['user_id'] = user['id']
-                    session['username'] = user['username']
-                    flash("Login successful!", "success")
-                    return redirect(url_for('dashboard'))  # Redirect to dashboard
+                if user:
+                    app.logger.info(f"User found for login_id: {login_id}, user_id: {user['id']}")
+                    try:
+                        if bcrypt.checkpw(password.encode(), user['password'].encode()):
+                            session['user_id'] = user['id']
+                            session['username'] = user['username']
+                            flash("Login successful!", "success")
+                            return redirect(url_for('dashboard'))  # Redirect to dashboard
+                        else:
+                            app.logger.warning(f"Password mismatch for user_id: {user['id']}")
+                            flash("Incorrect Password or Username/Phone", "danger")
+                            return redirect(url_for('home'))  # Redirect to login page
+                    except Exception as e:
+                        app.logger.error(f"Password hash error for user_id: {user['id']}: {e}")
+                        flash("Unable to process login. Please try again.", "error")
+                        return redirect(url_for('home'))
                 else:
+                    app.logger.warning(f"No user found for login_id: {login_id}")
                     flash("Incorrect Password or Username/Phone", "danger")
                     return redirect(url_for('home'))  # Redirect to login page
 
