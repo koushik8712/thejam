@@ -80,7 +80,7 @@
             <div class="animal-card">
                 <div class="animal-card-content">
                     <div class="animal-image">
-                        <img src="{{ url_for('static', filename='uploads/' + animal.photos.split(',')[0]) }}" 
+                        <img src="{{ animal.photos.split(',')[0] }}" 
                              alt="{{ animal.category }}"
                              onclick="openGallery('{{ animal.photos | escapejs }}')">
                         {% if animal.photos.split(',')|length > 1 %}
@@ -521,7 +521,7 @@ let currentGallery = {
 };
 
 function openGallery(photos) {
-    const imageList = photos.split(',').map(img => `/static/uploads/${img}`);
+    const imageList = photos.split(','); // URLs now
     currentGallery.images = imageList;
     currentGallery.currentIndex = 0;
     updateGalleryView();
