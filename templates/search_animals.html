@@ -8,8 +8,7 @@
     <nav>
         <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
         <a href="{{ url_for('post_animal') }}">{{ get_text('post animal') }}</a> |
-        <a href="{{ url_for('saved_animals') }}">{{ get_text('saved animals') }}</a>       |
-        
+        <a href="{{ url_for('saved_animals') }}">{{ get_text('saved animals') }}</a>      
     </nav>
 
     <div class="filter-container">
@@ -77,7 +76,7 @@
 
     <div class="animals-wrapper">
         {% for animal in animals %}
-            <div class="animal-card">
+            <div class="animal-card" data-animal-id="{{ animal.id }}">
                 <div class="animal-card-content">
                     <div class="animal-image">
                         <img src="{{ animal.photos.split(',')[0] }}" 
@@ -118,6 +117,9 @@
                             </svg>
                         </div>
                     </label>
+                    {% if animal.posted_by == session['user_id'] %}
+                    <button class="delete-animal-btn small-delete-btn" data-animal-id="{{ animal.id }}">Delete</button>
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}
@@ -282,52 +284,36 @@
         gap: 10px;
         justify-content: space-between;
         margin-top: 15px;
+        align-items: stretch;
     }
 
-    .job-card-actions a {
+    .job-card-actions a,
+    .job-card-actions button.small-delete-btn {
         flex: 1;
         padding: 8px 12px;
-        background-color: #bf591c;
-        color: white;
-        text-decoration: none;
         border-radius: 4px;
         text-align: center;
-        transition: background-color 0.3s;
-    }
-
-    .job-card-actions a:hover {
-        background-color: #a64d18;
-    }
-
-    .view-photos-btn {
-        flex: 1;
-        padding: 8px 12px;
-        background-color: #007bff;
-        color: white;
+        font-size: 1em;
         border: none;
-        border-radius: 4px;
-        text-align: center;
         cursor: pointer;
         transition: background-color 0.3s;
+        min-width: 0;
+        max-width: 180px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    .view-photos-btn:hover {
-        background-color: #0056b3;
+    .job-card-actions button.small-delete-btn {
+        background-color: #e74c3c;
+        color: #fff;
+        margin: 0;
+        font-weight: 500;
+        /* Match height and style of other buttons */
     }
 
-    @media (max-width: 480px) {
-        .animal-image img {
-            width: 150px;
-            height: 150px;
-        }
-
-        .job-card-actions {
-            flex-direction: column;
-        }
-
-        .job-card-actions a {
-            margin: 5px 0;
-        }
+    .job-card-actions button.small-delete-btn:hover {
+        background-color: #c0392b;
     }
 
     /* Modal Gallery Styles */
@@ -511,6 +497,26 @@ document.querySelectorAll('.ui-bookmark input').forEach(input => {
         .finally(() => {
             this.disabled = false;
         });
+    });
+});
+
+document.querySelectorAll('.delete-animal-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (!confirm('Are you sure you want to delete this animal?')) return;
+        const animalId = this.getAttribute('data-animal-id');
+        fetch(`/delete_animal/${animalId}`, {
+            method: 'POST',
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(res => res.json())
+        .then(data => { // <-- FIXED: was ".then data => {"
+            if (data.success) {
+                this.closest('.animal-card').remove();
+            } else {
+                alert(data.message || 'Failed to delete animal');
+            }
+        })
+        .catch(() => alert('Failed to delete animal'));
     });
 });
 

@@ -17,7 +17,6 @@ import time
 import socket
 from contextlib import contextmanager
 from markupsafe import escape
-import requests  # <-- Add this import
 
 
 load_dotenv()
@@ -962,6 +961,50 @@ def internal_error(error):
     app.logger.error('Server Error: %s', str(error))
     app.logger.error(traceback.format_exc())
     return render_template('errors/500.html'), 500
+
+@app.route('/delete_job/<int:job_id>', methods=['POST'])
+def delete_job(job_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Please log in first'}), 401
+    user_id = session['user_id']
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT posted_by FROM jobs WHERE id = %s", (job_id,))
+            row = cursor.fetchone()
+            if not row:
+                return jsonify({'success': False, 'message': 'Job not found'}), 404
+            if row[0] != user_id:
+                return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+            cursor.execute("DELETE FROM jobs WHERE id = %s", (job_id,))
+            conn.commit()
+            cursor.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        app.logger.error(f"Error deleting job: {str(e)}")
+        return jsonify({'success': False, 'message': 'Error deleting job'}), 500
+
+@app.route('/delete_animal/<int:animal_id>', methods=['POST'])
+def delete_animal(animal_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Please log in first'}), 401
+    user_id = session['user_id']
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT posted_by FROM animals WHERE id = %s", (animal_id,))
+            row = cursor.fetchone()
+            if not row:
+                return jsonify({'success': False, 'message': 'Animal not found'}), 404
+            if row[0] != user_id:
+                return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+            cursor.execute("DELETE FROM animals WHERE id = %s", (animal_id,))
+            conn.commit()
+            cursor.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        app.logger.error(f"Error deleting animal: {str(e)}")
+        return jsonify({'success': False, 'message': 'Error deleting animal'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
