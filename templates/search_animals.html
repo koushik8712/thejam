@@ -3,7 +3,8 @@
 {% block title %}{{ get_text('search animals') }}{% endblock %}
 
 {% block content %}
-<div class="container">
+<div id="progress-bar" style="display:none;position:fixed;top:0;left:0;width:0;height:4px;background:#bf591e;z-index:9999;transition:width 0.4s cubic-bezier(.4,0,.2,1);"></div>
+<div class="container" id="main-content">
     <nav>
         <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
         <a href="{{ url_for('post_animal') }}">{{ get_text('post animal') }}</a> |
@@ -458,6 +459,7 @@
     }
 </style>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 <script>
 function toggleFilterInputs() {
     const filterBy = document.getElementById('filter_by').value;
@@ -580,5 +582,30 @@ function closeGalleryModal() {
     const modal = document.getElementById('gallery-modal');
     modal.style.display = 'none';
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    anime({
+        targets: '#main-content',
+        opacity: [0, 1],
+        duration: 700,
+        easing: 'easeOutQuad'
+    });
+});
+
+document.getElementById('filterForm').addEventListener('submit', function(e) {
+    var bar = document.getElementById('progress-bar');
+    bar.style.display = 'block';
+    bar.style.width = '0';
+    setTimeout(function() { bar.style.width = '100vw'; }, 10);
+});
+
+document.querySelectorAll('nav a').forEach(function(link) {
+    link.addEventListener('click', function() {
+        var bar = document.getElementById('progress-bar');
+        bar.style.display = 'block';
+        bar.style.width = '0';
+        setTimeout(function() { bar.style.width = '100vw'; }, 10);
+    });
+});
 </script>
 {% endblock %}

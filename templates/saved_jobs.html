@@ -3,7 +3,8 @@
 {% block title %}{{ get_text('liked jobs') }}{% endblock %}
 
 {% block content %}
-<div class="container">
+<div id="progress-bar" style="display:none;position:fixed;top:0;left:0;width:0;height:4px;background:#bf591e;z-index:9999;transition:width 0.4s cubic-bezier(.4,0,.2,1);"></div>
+<div class="container" id="main-content">
     <nav>
         <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
         <a href="{{ url_for('post_job') }}">{{ get_text('post job') }}</a> |
@@ -161,7 +162,25 @@
         }
     }
 </style>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    anime({
+        targets: '#main-content',
+        opacity: [0, 1],
+        duration: 700,
+        easing: 'easeOutQuad'
+    });
+});
+document.querySelectorAll('nav a').forEach(function(link) {
+    link.addEventListener('click', function() {
+        var bar = document.getElementById('progress-bar');
+        bar.style.display = 'block';
+        bar.style.width = '0';
+        setTimeout(function() { bar.style.width = '100vw'; }, 10);
+    });
+});
+</script>
 <script>
     document.querySelectorAll('.ui-bookmark input').forEach(input => {
         const jobId = input.getAttribute('data-job-id');

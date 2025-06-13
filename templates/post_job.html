@@ -3,7 +3,8 @@
 {% block title %}{{ get_text('post job') }}{% endblock %}
 
 {% block content %}
-<div class="post-job-container">
+<div id="progress-bar" style="display:none;position:fixed;top:0;left:0;width:0;height:4px;background:#bf591e;z-index:9999;transition:width 0.4s cubic-bezier(.4,0,.2,1);"></div>
+<div class="post-job-container" id="main-content">
     {% with messages = get_flashed_messages() %}
     {% if messages %}
     <div class="flash-messages">
@@ -20,7 +21,7 @@
         <a href="{{ url_for('search_jobs') }}">{{ get_text('search jobs') }}</a> |
         <a href="{{ url_for('saved_jobs') }}">{{ get_text('liked jobs') }}</a>
     </nav>
-    <form action="{{ url_for('post_job') }}" method="POST">
+    <form action="{{ url_for('post_job') }}" method="POST" id="postjob-form">
         <label for="title">{{ get_text('job title') }}</label>
         <select name="title" id="title" required>
             <option value="" disabled selected>{{ get_text('select job') }}</option>
@@ -75,4 +76,29 @@
     </script>
     <br>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    anime({
+        targets: '#main-content',
+        opacity: [0, 1],
+        duration: 700,
+        easing: 'easeOutQuad'
+    });
+});
+document.getElementById('postjob-form').addEventListener('submit', function(e) {
+    var bar = document.getElementById('progress-bar');
+    bar.style.display = 'block';
+    bar.style.width = '0';
+    setTimeout(function() { bar.style.width = '100vw'; }, 10);
+});
+document.querySelectorAll('nav a').forEach(function(link) {
+    link.addEventListener('click', function() {
+        var bar = document.getElementById('progress-bar');
+        bar.style.display = 'block';
+        bar.style.width = '0';
+        setTimeout(function() { bar.style.width = '100vw'; }, 10);
+    });
+});
+</script>
 {% endblock %}
