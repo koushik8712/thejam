@@ -17,7 +17,6 @@ import time
 import socket
 from contextlib import contextmanager
 from markupsafe import escape
-import requests
 
 load_dotenv()
 
