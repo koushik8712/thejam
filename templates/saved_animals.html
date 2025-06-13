@@ -18,10 +18,10 @@
     {% if saved_animals %}
         <div class="animals-wrapper">
             {% for animal in saved_animals %}
-                <div class="animal-card" data-animal-id="{{ animal.id }}">
+                <div class="animal-card">
                     <div class="animal-card-content">
                         <div class="animal-image">
-                            <img src="{{ animal.photos.split(',')[0] }}" 
+                            <img src="{{ url_for('static', filename='uploads/' + animal.photos.split(',')[0]) }}" 
                                  alt="{{ animal.category }}"
                                  onclick="openGallery('{{ animal.photos | escapejs }}')">
                             {% if animal.photos.split(',')|length > 1 %}
@@ -61,7 +61,7 @@
                             </div>
                         </label>
                         {% if animal.posted_by == session['user_id'] %}
-                        <button class="delete-animal-btn small-delete-btn" data-animal-id="{{ animal.id }}">Delete</button>
+                        <button class="delete-animal-btn" data-animal-id="{{ animal.id }}">{{ get_text('delete') }}</button>
                         {% endif %}
                     </div>
                 </div>
@@ -163,35 +163,37 @@
         gap: 10px;
         justify-content: space-between;
         margin-top: 15px;
-        align-items: stretch;
     }
 
-    .job-card-actions a,
-    .job-card-actions button.small-delete-btn {
+    .job-card-actions a {
         flex: 1;
         padding: 8px 12px;
+        background-color: #bf591c;
+        color: white;
+        text-decoration: none;
         border-radius: 4px;
         text-align: center;
-        font-size: 1em;
+        transition: background-color 0.3s;
+    }
+
+    .job-card-actions a:hover {
+        background-color: #a64d18;
+    }
+
+    .view-photos-btn {
+        flex: 1;
+        padding: 8px 12px;
+        background-color: #007bff;
+        color: white;
         border: none;
+        border-radius: 4px;
+        text-align: center;
         cursor: pointer;
         transition: background-color 0.3s;
-        min-width: 0;
-        max-width: 180px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .job-card-actions button.small-delete-btn {
-        background-color: #e74c3c;
-        color: #fff;
-        margin: 0;
-        font-weight: 500;
-    }
-
-    .job-card-actions button.small-delete-btn:hover {
-        background-color: #c0392b;
+    .view-photos-btn:hover {
+        background-color: #0056b3;
     }
 
     @media (max-width: 480px) {
@@ -329,6 +331,29 @@
         cursor: pointer;
         z-index: 1000;
     }
+
+    .delete-animal-btn {
+        flex: 1;
+        padding: 8px 12px;
+        background-color: #e74c3c;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        text-align: center;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-left: 5px;
+        min-width: 0;
+        max-width: 180px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .delete-animal-btn:hover {
+        background-color: #c0392b;
+    }
 </style>
 
 <script>
@@ -406,7 +431,7 @@ let currentGallery = {
 };
 
 function openGallery(photos) {
-    const imageList = photos.split(','); // URLs now
+    const imageList = photos.split(',').map(img => `/static/uploads/${img}`);
     currentGallery.images = imageList;
     currentGallery.currentIndex = 0;
     updateGalleryView();
@@ -456,4 +481,3 @@ function closeGalleryModal() {
 }
 </script>
 {% endblock %}
-

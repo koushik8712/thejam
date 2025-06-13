@@ -17,7 +17,7 @@ import time
 import socket
 from contextlib import contextmanager
 from markupsafe import escape
-
+import requests
 
 load_dotenv()
 
@@ -44,31 +44,6 @@ RURAL_JOB_TITLES = [
     "Greenhouse Worker", "Agricultural Scientist", "Soil Tester",
     "Water Resource Manager", "Farm Equipment Operator", "Seed Distributor"
 ]
-
-IMGBB_API_KEY = "62706096c4bd73efc12678c47c69b28d"
-
-def upload_to_imgbb(file_storage):
-    """
-    Uploads a Werkzeug FileStorage object to ImgBB and returns the image URL.
-    """
-    url = "https://api.imgbb.com/1/upload"
-    payload = {
-        "key": IMGBB_API_KEY,
-    }
-    files = {
-        "image": (file_storage.filename, file_storage.stream, file_storage.mimetype)
-    }
-    try:
-        response = requests.post(url, data=payload, files=files)
-        response.raise_for_status()
-        data = response.json()
-        if data.get("success"):
-            return data["data"]["url"]
-        else:
-            raise Exception("ImgBB upload failed: " + str(data))
-    except Exception as e:
-        app.logger.error(f"ImgBB upload error: {e}")
-        return None
 
 def ensure_upload_dirs():
     for directory in [UPLOAD_FOLDER, AVATAR_FOLDER]:
@@ -579,19 +554,37 @@ def post_animal():
         contact_number = request.form.get('contact_number')
         photos = request.files.getlist('animal_photos')
 
+        # Limit to 4 files and skip empty files
+        photo_filenames = []
+        for photo in photos[:4]:
+            if photo and allowed_file(photo.filename):
+                filename = secure_filename(photo.filename)
+                save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                # Ensure unique filename
+                base, ext = os.path.splitext(filename)
+                counter = 1
+                while os.path.exists(save_path):
+                    filename = f"{base}_{counter}{ext}"
+                    save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    counter += 1
+                photo.save(save_path)
+                photo_filenames.append(filename)
+
+        # Ensure numeric fields are correct for PostgreSQL
+        try:
+            weight = float(weight)
+            price = float(price)
+        except Exception:
+            flash("Weight and Price must be numbers.", "danger")
+            return render_template('post_animal.html')
+
         if not all([animal_name, weight, price, location, contact_number]):
             flash("Please fill in all required fields!", "danger")
             return render_template('post_animal.html')  
 
-        photo_urls = []
-        for photo in photos:
-            if allowed_file(photo.filename):
-                url = upload_to_imgbb(photo)
-                if url:
-                    photo_urls.append(url)
-                else:
-                    flash("Failed to upload one or more images. Please try again.", "danger")
-                    return render_template('post_animal.html')
+        if not photo_filenames:
+            flash("Please upload at least one valid image.", "danger")
+            return render_template('post_animal.html')
 
         try:
             with get_db_connection() as conn:
@@ -601,7 +594,7 @@ def post_animal():
                        location, contact_number, photos, posted_by)
                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                     (animal_name, age, breed, weight, price, description, location, 
-                     contact_number, ','.join(photo_urls), session.get('user_id'))
+                     contact_number, ','.join(photo_filenames), session.get('user_id'))
                 )
                 conn.commit()
                 cursor.close()

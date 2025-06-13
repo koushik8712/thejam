@@ -49,7 +49,7 @@
                         <span>{{ get_text('plus icon') }}</span>
                     </div>
                     <input type="file" id="photo-input" name="animal_photos" accept="image/*" multiple 
-                           style="display: none" onchange="handleImageUpload(event)">
+                           style="display: none" onchange="handleImageUpload(event)" max="4">
                 </div>
             </div>
 
@@ -320,7 +320,7 @@ let uploadedImages = [];
 let currentImageIndex = 0;
 
 function handleImageUpload(event) {
-    const files = Array.from(event.target.files);
+    const files = Array.from(event.target.files).slice(0, 4); // Only allow up to 4 files
     const previewContainer = document.getElementById('preview-container');
 
     previewContainer.querySelectorAll('.preview-wrapper').forEach(wrapper => wrapper.remove());
@@ -353,6 +353,12 @@ function handleImageUpload(event) {
             reader.readAsDataURL(file);
         }
     });
+
+    // If more than 4 files are selected, show a warning
+    if (event.target.files.length > 4) {
+        alert("You can upload a maximum of 4 photos.");
+        event.target.value = ""; // Clear the input
+    }
 }
 
 function addImagePreview(src, file) {

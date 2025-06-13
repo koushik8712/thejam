@@ -8,7 +8,8 @@
     <nav>
         <a href="{{ url_for('dashboard') }}">← {{ get_text('back to dashboard') }}</a> |
         <a href="{{ url_for('post_animal') }}">{{ get_text('post animal') }}</a> |
-        <a href="{{ url_for('saved_animals') }}">{{ get_text('saved animals') }}</a>      
+        <a href="{{ url_for('saved_animals') }}">{{ get_text('saved animals') }}</a>       |
+        
     </nav>
 
     <div class="filter-container">
@@ -76,10 +77,10 @@
 
     <div class="animals-wrapper">
         {% for animal in animals %}
-            <div class="animal-card" data-animal-id="{{ animal.id }}">
+            <div class="animal-card">
                 <div class="animal-card-content">
                     <div class="animal-image">
-                        <img src="{{ animal.photos.split(',')[0] }}" 
+                        <img src="{{ url_for('static', filename='uploads/' + animal.photos.split(',')[0]) }}" 
                              alt="{{ animal.category }}"
                              onclick="openGallery('{{ animal.photos | escapejs }}')">
                         {% if animal.photos.split(',')|length > 1 %}
@@ -118,7 +119,7 @@
                         </div>
                     </label>
                     {% if animal.posted_by == session['user_id'] %}
-                    <button class="delete-animal-btn small-delete-btn" data-animal-id="{{ animal.id }}">Delete</button>
+                    <button class="delete-animal-btn" data-animal-id="{{ animal.id }}">{{ get_text('delete') }}</button>
                     {% endif %}
                 </div>
             </div>
@@ -284,19 +285,51 @@
         gap: 10px;
         justify-content: space-between;
         margin-top: 15px;
-        align-items: stretch;
     }
 
-    .job-card-actions a,
-    .job-card-actions button.small-delete-btn {
+    .job-card-actions a {
         flex: 1;
         padding: 8px 12px;
+        background-color: #bf591c;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        text-align: center;
+        transition: background-color 0.3s;
+    }
+
+    .job-card-actions a:hover {
+        background-color: #a64d18;
+    }
+
+    .view-photos-btn {
+        flex: 1;
+        padding: 8px 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .view-photos-btn:hover {
+        background-color: #0056b3;
+    }
+
+    .delete-animal-btn {
+        flex: 1;
+        padding: 8px 12px;
+        background-color: #e74c3c;
+        color: #fff;
+        border: none;
         border-radius: 4px;
         text-align: center;
         font-size: 1em;
-        border: none;
         cursor: pointer;
         transition: background-color 0.3s;
+        margin-left: 5px;
         min-width: 0;
         max-width: 180px;
         white-space: nowrap;
@@ -304,16 +337,23 @@
         text-overflow: ellipsis;
     }
 
-    .job-card-actions button.small-delete-btn {
-        background-color: #e74c3c;
-        color: #fff;
-        margin: 0;
-        font-weight: 500;
-        /* Match height and style of other buttons */
+    .delete-animal-btn:hover {
+        background-color: #c0392b;
     }
 
-    .job-card-actions button.small-delete-btn:hover {
-        background-color: #c0392b;
+    @media (max-width: 480px) {
+        .animal-image img {
+            width: 150px;
+            height: 150px;
+        }
+
+        .job-card-actions {
+            flex-direction: column;
+        }
+
+        .job-card-actions a {
+            margin: 5px 0;
+        }
     }
 
     /* Modal Gallery Styles */
@@ -509,7 +549,7 @@ document.querySelectorAll('.delete-animal-btn').forEach(btn => {
             headers: {'X-Requested-With': 'XMLHttpRequest'}
         })
         .then(res => res.json())
-        .then(data => { // <-- FIXED: was ".then data => {"
+        .then(data => {
             if (data.success) {
                 this.closest('.animal-card').remove();
             } else {
@@ -527,7 +567,7 @@ let currentGallery = {
 };
 
 function openGallery(photos) {
-    const imageList = photos.split(','); // URLs now
+    const imageList = photos.split(',').map(img => `/static/uploads/${img}`);
     currentGallery.images = imageList;
     currentGallery.currentIndex = 0;
     updateGalleryView();
